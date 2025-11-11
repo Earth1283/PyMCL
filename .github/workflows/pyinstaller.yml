@@ -41,8 +41,8 @@ jobs:
           files: |
             dist/launcher.exe
             launcher.exe.sha256
-          tag_name: release-${{ github.sha }}
-          name: Release ${{ github.sha }}
+          tag_name: release-${{ format('yyyy-MM-dd') }}
+          name: Release ${{ format('yyyy-MM-dd') }}
           draft: false
           prerelease: false
         env:
