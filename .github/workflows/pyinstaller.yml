@@ -41,8 +41,8 @@ jobs:
           files: |
             dist/launcher.exe
             launcher.exe.sha256
-          tag_name: release-${{ format('yyyy-MM-dd') }}
-          name: Release ${{ format('yyyy-MM-dd') }}
+          tag_name: pymcl-autobuild-${{ github.sha }}
+          name: PyMCL Auto Build
           draft: false
           prerelease: false
         env:
