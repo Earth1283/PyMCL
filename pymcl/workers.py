@@ -1,0 +1,183 @@
+import os
+import subprocess
+import uuid
+import json
+from typing import cast
+
+import minecraft_launcher_lib
+import requests
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+
+from .constants import (
+    MINECRAFT_DIR,
+    VERSIONS_CACHE_PATH,
+    DEFAULT_IMAGE_URL,
+    DEFAULT_IMAGE_PATH,
+    MODS_DIR,
+)
+
+
+class VersionFetcher(QObject):
+    finished = pyqtSignal(list, bool, str)
+
+    @pyqtSlot()
+    def run(self):
+        try:
+            versions = minecraft_launcher_lib.utils.get_version_list()
+
+            try:
+                with open(VERSIONS_CACHE_PATH, "w") as f:
+                    json.dump(versions, f)
+                print(f"Version list cached to {VERSIONS_CACHE_PATH}")
+            except Exception as e:
+                print(f"Failed to save version cache: {e}")
+
+            release_versions = [v["id"] for v in versions if v["type"] == "release"]
+            self.finished.emit(release_versions, True, "Versions loaded successfully.")
+        except Exception as e:
+            error_msg = f"Error fetching versions: {str(e)}"
+            print(error_msg)
+            self.finished.emit([], False, error_msg)
+
+
+class ImageDownloader(QObject):
+    finished = pyqtSignal(bool, str)
+
+    @pyqtSlot()
+    def run(self):
+        try:
+            print(f"Downloading default image from {DEFAULT_IMAGE_URL}...")
+            response = requests.get(DEFAULT_IMAGE_URL)
+            response.raise_for_status()
+
+            with open(DEFAULT_IMAGE_PATH, "wb") as f:
+                f.write(response.content)
+
+            print(f"Image saved to {DEFAULT_IMAGE_PATH}")
+            self.finished.emit(True, DEFAULT_IMAGE_PATH)
+        except Exception as e:
+            error_msg = f"Error downloading image: {str(e)}"
+            print(error_msg)
+            self.finished.emit(False, error_msg)
+
+
+class ModDownloader(QObject):
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+
+    @pyqtSlot()
+    def run(self):
+        try:
+            print(f"Downloading mod from {self.url}...")
+            response = requests.get(self.url)
+            response.raise_for_status()
+
+            filename = ""
+            if "content-disposition" in response.headers:
+                disp = response.headers["content-disposition"]
+                filename = disp.split("filename=")[-1].strip("'")
+
+            if not filename:
+                filename = self.url.split("/")[-1]
+
+            if not filename.endswith(".jar"):
+                if "?" in filename:
+                    filename = filename.split("?")[0]
+                if not filename.endswith(".jar"):
+                    filename = f"{filename.split('.')[0]}.jar"
+
+            save_path = os.path.join(MODS_DIR, filename)
+
+            with open(save_path, "wb") as f:
+                f.write(response.content)
+
+            print(f"Mod saved to {save_path}")
+            self.finished.emit(True, f"Downloaded '{filename}'")
+        except Exception as e:
+            error_msg = f"Error downloading mod: {str(e)}"
+            print(error_msg)
+            self.finished.emit(False, error_msg)
+
+
+class Worker(QObject):
+    progress = pyqtSignal(int, int)
+    status = pyqtSignal(str)
+    finished = pyqtSignal(bool, str)
+
+    def __init__(self, version, username, use_fabric):
+        super().__init__()
+        self.version = version
+        self.username = username
+        self.use_fabric = use_fabric
+
+    @pyqtSlot()
+    def run(self):
+        try:
+            def set_status(text: str) -> None:
+                self.status.emit(text)
+
+            def set_progress(value: int, maximum: int = 100) -> None:
+                self.progress.emit(value, maximum)
+
+            self.version_to_launch = self.version
+
+            set_status(f"Installing Minecraft {self.version}...")
+            minecraft_launcher_lib.install.install_minecraft_version(
+                version=self.version,
+                minecraft_directory=MINECRAFT_DIR,
+                callback={"setStatus": set_status, "setProgress": set_progress},
+            )
+
+            if self.use_fabric:
+                set_status("Installing Fabric...")
+                try:
+                    loader_version = (
+                        minecraft_launcher_lib.fabric.get_latest_loader_version()
+                    )
+                    set_status(f"Found Fabric Loader {loader_version}")
+
+                    minecraft_launcher_lib.fabric.install_fabric(
+                        minecraft_version=self.version,
+                        minecraft_directory=MINECRAFT_DIR,
+                        loader_version=loader_version,
+                        callback={"setStatus": set_status, "setProgress": set_progress},
+                    )
+                    self.version_to_launch = (
+                        f"fabric-loader-{loader_version}-{self.version}"
+                    )
+                except Exception as fabric_e:
+                    print(f"Fabric install failed: {fabric_e}")
+                    self.status.emit(f"Fabric install failed: {fabric_e}")
+                    self.finished.emit(False, f"Fabric install failed: {fabric_e}")
+                    return
+
+            set_progress(1, 1)
+
+            options = cast(
+                minecraft_launcher_lib.command.MinecraftOptions,
+                {"username": self.username, "uuid": str(uuid.uuid4()), "token": ""},
+            )
+
+            set_status("Getting launch command...")
+            command = minecraft_launcher_lib.command.get_minecraft_command(
+                version=self.version_to_launch,
+                minecraft_directory=MINECRAFT_DIR,
+                options=options,
+            )
+
+            set_status("Launching game...")
+            self.progress.emit(0, 0)
+            process = subprocess.Popen(command)
+            process.wait()
+
+            set_status("Game closed.")
+            self.finished.emit(True, "Game closed.")
+
+        except Exception as e:
+            error_msg = f"An error occurred: {str(e)}"
+            print(error_msg)
+            self.status.emit(error_msg)
+            self.finished.emit(False, error_msg)

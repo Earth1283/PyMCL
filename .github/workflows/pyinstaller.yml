@@ -26,21 +26,21 @@ jobs:
       
       - name: Build executable with PyInstaller
         run: |
-          pyinstaller --onefile --windowed launcher.py
+          pyinstaller --onefile --windowed --name PyMCL main.py
       
       - name: Generate SHA256 checksum
         run: |
-          $exe_path = "dist\launcher.exe"
+          $exe_path = "dist\PyMCL.exe"
           $checksum = (Get-FileHash -Path $exe_path -Algorithm SHA256).Hash
-          $checksum | Out-File -FilePath "launcher.exe.sha256" -Encoding utf8
+          $checksum | Out-File -FilePath "PyMCL.exe.sha256" -Encoding utf8
           echo "SHA256: $checksum"
       
       - name: Publish to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/launcher.exe
-            launcher.exe.sha256
+            dist/PyMCL.exe
+            PyMCL.exe.sha256
           tag_name: pymcl-autobuild-${{ github.sha }}
           name: PyMCL Auto Build
           draft: false
