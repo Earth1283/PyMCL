@@ -36,7 +36,7 @@ class ModManagerDialog(QDialog):
         layout.setSpacing(15)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        drop_label = QLabel("Drag & Drop .jar files here to install")
+        drop_label = QLabel("Drag & Drop .jar files here to install them")
         drop_label.setObjectName("section_label")
         drop_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(drop_label)
