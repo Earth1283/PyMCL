@@ -107,10 +107,10 @@ class Worker(QObject):
     status = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, version, username, use_fabric):
+    def __init__(self, version, options, use_fabric):
         super().__init__()
         self.version = version
-        self.username = username
+        self.options = options
         self.use_fabric = use_fabric
 
     @pyqtSlot()
@@ -156,16 +156,11 @@ class Worker(QObject):
 
             set_progress(1, 1)
 
-            options = cast(
-                minecraft_launcher_lib.command.MinecraftOptions,
-                {"username": self.username, "uuid": str(uuid.uuid4()), "token": ""},
-            )
-
             set_status("Getting launch command...")
             command = minecraft_launcher_lib.command.get_minecraft_command(
                 version=self.version_to_launch,
                 minecraft_directory=MINECRAFT_DIR,
-                options=options,
+                options=self.options,
             )
 
             set_status("Launching game...")

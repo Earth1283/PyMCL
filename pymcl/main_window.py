@@ -2,6 +2,8 @@ import glob
 import json
 import os
 import uuid
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer
 from PyQt6.QtGui import QColor, QFont
@@ -22,12 +24,14 @@ from PyQt6.QtWidgets import (
 
 from .constants import (
     APP_NAME,
+    CLIENT_ID,
     IMAGES_DIR,
     VERSIONS_CACHE_PATH,
 )
 from .mod_manager import ModManagerDialog
 from .stylesheet import STYLESHEET
 from .workers import ImageDownloader, VersionFetcher, Worker
+import minecraft_launcher_lib
 
 
 class MainWindow(QMainWindow):
@@ -40,6 +44,7 @@ class MainWindow(QMainWindow):
         self.image_downloader_thread = None
         self.image_downloader = None
         self.bg_timer = None
+        self.minecraft_info = None
 
         self.image_files = []
         self.current_image_index = 0
@@ -53,6 +58,7 @@ class MainWindow(QMainWindow):
         self.add_shadow_effects()
         self.populate_versions()
         self.init_background_images()
+        self.load_microsoft_info()
 
     def init_ui(self):
         central_widget = QWidget()
@@ -95,9 +101,23 @@ class MainWindow(QMainWindow):
         content_layout.setSpacing(0)
         main_layout.addWidget(content_frame, 3)
 
-        username_label = QLabel("USERNAME")
-        username_label.setObjectName("section_label")
-        content_layout.addWidget(username_label)
+        auth_method_label = QLabel("AUTHENTICATION")
+        auth_method_label.setObjectName("section_label")
+        content_layout.addWidget(auth_method_label)
+
+        content_layout.addSpacing(5)
+
+        self.auth_method_combo = QComboBox()
+        self.auth_method_combo.addItems(["Offline", "Microsoft"])
+        self.auth_method_combo.setMinimumHeight(55)
+        self.auth_method_combo.currentTextChanged.connect(self.update_auth_widgets)
+        content_layout.addWidget(self.auth_method_combo)
+
+        content_layout.addSpacing(20)
+
+        self.username_label = QLabel("USERNAME")
+        self.username_label.setObjectName("section_label")
+        content_layout.addWidget(self.username_label)
 
         content_layout.addSpacing(5)
 
@@ -106,6 +126,12 @@ class MainWindow(QMainWindow):
         self.username_input.setText(f"Player{uuid.uuid4().hex[:6]}")
         self.username_input.setMinimumHeight(55)
         content_layout.addWidget(self.username_input)
+
+        self.microsoft_login_button = QPushButton("Login with Microsoft")
+        self.microsoft_login_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.microsoft_login_button.setMinimumHeight(55)
+        self.microsoft_login_button.clicked.connect(self.start_microsoft_login)
+        content_layout.addWidget(self.microsoft_login_button)
 
         content_layout.addSpacing(20)
 
@@ -164,6 +190,63 @@ class MainWindow(QMainWindow):
         content_layout.addWidget(self.status_label)
 
         content_layout.addStretch(1)
+        self.update_auth_widgets()
+
+    def update_auth_widgets(self):
+        auth_method = self.auth_method_combo.currentText()
+        if auth_method == "Offline":
+            self.username_label.setVisible(True)
+            self.username_input.setVisible(True)
+            self.microsoft_login_button.setVisible(False)
+        elif auth_method == "Microsoft":
+            self.username_label.setVisible(False)
+            self.username_input.setVisible(False)
+            self.microsoft_login_button.setVisible(True)
+
+    def start_microsoft_login(self):
+        login_url, state = minecraft_launcher_lib.microsoft_account.get_login_url(
+            CLIENT_ID, "http://localhost:8000"
+        )
+        webbrowser.open(login_url)
+
+        class AuthHandler(BaseHTTPRequestHandler):
+            def do_GET(self_handler):
+                auth_code = self_handler.path.split("?code=")[1]
+                self_handler.send_response(200)
+                self_handler.send_header("Content-type", "text/html")
+                self_handler.end_headers()
+                self_handler.wfile.write(b"You can now close this window.")
+                self.finish_microsoft_login(auth_code)
+
+        server = HTTPServer(("localhost", 8000), AuthHandler)
+        server.handle_request()
+
+    def finish_microsoft_login(self, auth_code):
+        try:
+            minecraft_info = minecraft_launcher_lib.microsoft_account.complete_login(
+                CLIENT_ID,
+                None,
+                "http://localhost:8000",
+                auth_code,
+            )
+            self.minecraft_info = minecraft_info
+            self.save_microsoft_info(minecraft_info)
+            self.update_status(f"Logged in as {minecraft_info['username']}")
+            self.microsoft_login_button.setText(f"Logged in as {minecraft_info['username']}")
+        except Exception as e:
+            self.update_status(f"Login failed: {e}")
+
+    def save_microsoft_info(self, info):
+        with open("microsoft_info.json", "w") as f:
+            json.dump(info, f)
+
+    def load_microsoft_info(self):
+        if os.path.exists("microsoft_info.json"):
+            with open("microsoft_info.json", "r") as f:
+                self.minecraft_info = json.load(f)
+                self.update_status(f"Logged in as {self.minecraft_info['username']}")
+                self.microsoft_login_button.setText(f"Logged in as {self.minecraft_info['username']}")
+                self.auth_method_combo.setCurrentText("Microsoft")
 
     def apply_styles(self):
         self.setStyleSheet(STYLESHEET)
@@ -340,17 +423,34 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def start_launch(self):
-        username = self.username_input.text().strip()
+        auth_method = self.auth_method_combo.currentText()
         version = self.version_combo.currentText()
+        use_fabric = self.fabric_toggle.isChecked()
 
-        if not username:
-            self.update_status("⚠️ Please enter a username")
-            return
         if not version or version == "Loading versions...":
             self.update_status("⚠️ Please select a version")
             return
 
-        use_fabric = self.fabric_toggle.isChecked()
+        options = {
+            "username": "",
+            "uuid": "",
+            "token": ""
+        }
+
+        if auth_method == "Offline":
+            username = self.username_input.text().strip()
+            if not username:
+                self.update_status("⚠️ Please enter a username")
+                return
+            options["username"] = username
+            options["uuid"] = str(uuid.uuid4())
+        elif auth_method == "Microsoft":
+            if not self.minecraft_info:
+                self.update_status("⚠️ Please login with Microsoft")
+                return
+            options["username"] = self.minecraft_info["username"]
+            options["uuid"] = self.minecraft_info["uuid"]
+            options["token"] = self.minecraft_info["token"]
 
         self.launch_button.setEnabled(False)
         self.launch_button.setText("⏳ LAUNCHING...")
@@ -359,7 +459,7 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(0)
 
         self.worker_thread = QThread()
-        self.worker = Worker(version, username, use_fabric)
+        self.worker = Worker(version, options, use_fabric)
         self.worker.moveToThread(self.worker_thread)
 
         self.worker_thread.started.connect(self.worker.run)
