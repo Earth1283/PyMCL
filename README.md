@@ -2,6 +2,11 @@
 
 A Python Minecraft Launcher - easily manage and launch Minecraft instances with a simple, intuitive interface and multiple distribution methods.
 
+## Badges
+Compilation to [GitHub Releases](https://github.com/Earth1283/PyMCL/releases) (CI/CD): [![Nuitka Build](https://github.com/Earth1283/PyMCL/actions/workflows/pyinstaller.yml/badge.svg)](https://github.com/Earth1283/PyMCL/actions/workflows/pyinstaller.yml)
+
+
+
 ## ✨ Features
 
 - 🚀 Quick and easy Minecraft instance management
