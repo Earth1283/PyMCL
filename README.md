@@ -17,6 +17,11 @@ Compilation to [GitHub Releases](https://github.com/Earth1283/PyMCL/releases) (C
 
 ![Code Quality](https://img.shields.io/badge/code%20quality-spaghetti-orange?style=for-the-badge&logo=pasta)
 
+![Python](https://img.shields.io/badge/made%20with-snakes-blue?style=for-the-badge&logo=python)
+
+![Git](https://img.shields.io/badge/git-blame-orange?style=for-the-badge&logo=git)
+
+![GUI](https://img.shields.io/badge/GUI-painful-yellow?style=for-the-badge)
 
 ## ✨ Features
 
