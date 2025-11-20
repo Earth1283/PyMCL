@@ -1,9 +1,10 @@
 import glob
 import json
 import os
+from PyQt6 import sip
 import uuid
 from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QColor, QFont, QCloseEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -60,6 +61,20 @@ class MainWindow(QMainWindow):
         self.populate_versions()
         self.init_background_images()
         self.load_microsoft_info()
+        self.load_settings()
+
+    def load_settings(self):
+        if not os.path.exists("pymcl/config/settings.json"):
+            return
+
+        try:
+            with open("pymcl/config/settings.json", "r") as f:
+                settings = json.load(f)
+                last_username = settings.get("last_username", "")
+                if last_username:
+                    self.username_input.setText(last_username)
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Error loading settings: {e}")
 
     def init_ui(self):
         central_widget = QWidget()
@@ -400,6 +415,17 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Error saving version cache: {e}")
 
+    def save_settings(self):
+        try:
+            with open("pymcl/config/settings.json", "r+") as f:
+                settings = json.load(f)
+                settings["last_username"] = self.username_input.text().strip()
+                f.seek(0)
+                json.dump(settings, f, indent=4)
+                f.truncate()
+        except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+            print(f"Error saving settings: {e}")
+
     @pyqtSlot()
     def start_launch(self):
         auth_method = self.auth_method_combo.currentText()
@@ -423,6 +449,7 @@ class MainWindow(QMainWindow):
                 return
             options["username"] = username
             options["uuid"] = str(uuid.uuid4())
+            self.save_settings()
         elif auth_method == "Microsoft":
             if not self.minecraft_info:
                 self.update_status("⚠️ Please login with Microsoft")
@@ -479,3 +506,24 @@ class MainWindow(QMainWindow):
         if success and "Game closed" in message:
             self.progress_bar.setValue(0)
             self.status_label.setText("✓ Ready to launch")
+
+    def closeEvent(self, a0: QCloseEvent | None):
+        if self.bg_timer:
+            self.bg_timer.stop()
+
+        if hasattr(self, 'worker_thread') and self.worker_thread and not sip.isdeleted(self.worker_thread) and self.worker_thread.isRunning():
+            self.worker_thread.quit()
+            self.worker_thread.wait()
+
+        if hasattr(self, 'version_fetch_thread') and self.version_fetch_thread and not sip.isdeleted(self.version_fetch_thread) and self.version_fetch_thread.isRunning():
+            self.version_fetch_thread.quit()
+            self.version_fetch_thread.wait()
+
+        if hasattr(self, 'image_downloader_thread') and self.image_downloader_thread and not sip.isdeleted(self.image_downloader_thread) and self.image_downloader_thread.isRunning():
+            self.image_downloader_thread.quit()
+            self.image_downloader_thread.wait()
+
+        if a0 is not None:
+            a0.accept()
+        else:
+            super().closeEvent(a0)
