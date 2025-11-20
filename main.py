@@ -5,6 +5,7 @@ def check_dirs() -> None:
     MINECRAFT_DIR = os.path.join("D:\\pymcl-data" if os.name == "nt" else os.path.join(os.path.expanduser("~"), ".pymcl-data"))
     IMAGES_DIR = os.path.join(MINECRAFT_DIR, "images")
     MODS_DIR = os.path.join(MINECRAFT_DIR, "mods")
+    
     if not os.path.exists(MINECRAFT_DIR):
         os.makedirs(MINECRAFT_DIR)
     os.makedirs(IMAGES_DIR, exist_ok=True)
