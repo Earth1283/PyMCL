@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -29,7 +30,12 @@ class ModsPage(QWidget):
         self.populate_mods_list()
 
     def init_ui(self):
-        layout = QVBoxLayout(self)
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setObjectName("content_scroll_area")
+
+        container = QWidget()
+        layout = QVBoxLayout(container)
         layout.setSpacing(15)
         layout.setContentsMargins(20, 20, 20, 20)
 
@@ -81,6 +87,12 @@ class ModsPage(QWidget):
         button_layout.addWidget(refresh_button)
 
         layout.addLayout(button_layout)
+        
+        scroll_area.setWidget(container)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.addWidget(scroll_area)
 
     @pyqtSlot()
     def populate_mods_list(self):

@@ -3,7 +3,7 @@ import json
 import os
 from PyQt6 import sip
 import uuid
-from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer
+from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint
 from PyQt6.QtGui import QColor, QFont, QCloseEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -18,6 +18,8 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
+    QSlider,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -38,9 +40,15 @@ from .microsoft_auth import MicrosoftAuth
 class LaunchPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setObjectName("content_scroll_area")
+        
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
 
         self.auth_method_label = QLabel("AUTHENTICATION")
         self.auth_method_label.setObjectName("section_label")
@@ -127,6 +135,12 @@ class LaunchPage(QWidget):
         layout.addWidget(self.status_label)
 
         layout.addStretch(1)
+        
+        scroll_area.setWidget(container)
+        
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.addWidget(scroll_area)
 
 
 class SettingsPage(QWidget):
@@ -171,7 +185,72 @@ class SettingsPage(QWidget):
         images_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.images_dir_input))
         images_dir_layout.addWidget(images_dir_browse_button)
         layout.addLayout(images_dir_layout)
-        
+
+        # Java executable setting
+        java_executable_label = QLabel("JAVA EXECUTABLE (OPTIONAL)")
+        java_executable_label.setObjectName("section_label")
+        layout.addWidget(java_executable_label)
+
+        java_executable_layout = QHBoxLayout()
+        self.java_executable_input = QLineEdit()
+        self.java_executable_input.setPlaceholderText("Enter Java executable path")
+        self.java_executable_input.setMinimumHeight(55)
+        java_executable_layout.addWidget(self.java_executable_input)
+
+        java_executable_browse_button = QPushButton("Browse")
+        java_executable_browse_button.setObjectName("secondary_button")
+        java_executable_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        java_executable_browse_button.clicked.connect(lambda: self.browse_file(self.java_executable_input))
+        java_executable_layout.addWidget(java_executable_browse_button)
+        layout.addLayout(java_executable_layout)
+
+        # JVM arguments setting
+        jvm_args_label = QLabel("JVM ARGUMENTS (ADVANCED)")
+        jvm_args_label.setObjectName("section_label")
+        layout.addWidget(jvm_args_label)
+
+        self.jvm_args_input = QLineEdit()
+        self.jvm_args_input.setPlaceholderText("-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC")
+        self.jvm_args_input.setMinimumHeight(55)
+        layout.addWidget(self.jvm_args_input)
+
+        # Memory allocation setting
+        memory_label = QLabel("MEMORY ALLOCATION (RAM)")
+        memory_label.setObjectName("section_label")
+        layout.addWidget(memory_label)
+
+        memory_layout = QHBoxLayout()
+        self.memory_slider = QSlider(Qt.Orientation.Horizontal)
+        self.memory_slider.setMinimum(1)
+        self.memory_slider.setMaximum(16) # Assuming max 16GB, can be adjusted
+        self.memory_slider.setValue(4) # Default 4GB
+        self.memory_slider.setTickInterval(1)
+        self.memory_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        memory_layout.addWidget(self.memory_slider)
+
+        self.memory_value_label = QLabel("4 GB")
+        self.memory_value_label.setObjectName("memory_label")
+        self.memory_slider.valueChanged.connect(self.update_memory_label)
+        memory_layout.addWidget(self.memory_value_label)
+        layout.addLayout(memory_layout)
+
+        # Resolution setting
+        resolution_label = QLabel("GAME RESOLUTION")
+        resolution_label.setObjectName("section_label")
+        layout.addWidget(resolution_label)
+
+        resolution_layout = QHBoxLayout()
+        self.width_input = QLineEdit()
+        self.width_input.setPlaceholderText("Width")
+        self.width_input.setMinimumHeight(55)
+        resolution_layout.addWidget(self.width_input)
+
+        self.height_input = QLineEdit()
+        self.height_input.setPlaceholderText("Height")
+        self.height_input.setMinimumHeight(55)
+        resolution_layout.addWidget(self.height_input)
+        layout.addLayout(resolution_layout)
+
         layout.addStretch(1)
 
         save_button = QPushButton("Save Settings")
@@ -181,6 +260,14 @@ class SettingsPage(QWidget):
         layout.addWidget(save_button)
 
         self.load_settings()
+
+    def browse_file(self, line_edit):
+        file, _ = QFileDialog.getOpenFileName(self, "Select File")
+        if file:
+            line_edit.setText(file)
+
+    def update_memory_label(self, value):
+        self.memory_value_label.setText(f"{value} GB")
 
     def browse_directory(self, line_edit):
         directory = QFileDialog.getExistingDirectory(self, "Select Directory")
@@ -196,6 +283,13 @@ class SettingsPage(QWidget):
                 settings = json.load(f)
                 self.mods_dir_input.setText(settings.get("mods_dir", ""))
                 self.images_dir_input.setText(settings.get("images_dir", ""))
+                self.java_executable_input.setText(settings.get("java_executable", ""))
+                self.jvm_args_input.setText(settings.get("jvm_arguments", ""))
+                self.memory_slider.setValue(settings.get("memory_gb", 4))
+                self.update_memory_label(self.memory_slider.value())
+                resolution = settings.get("resolution", {})
+                self.width_input.setText(resolution.get("width", ""))
+                self.height_input.setText(resolution.get("height", ""))
         except (json.JSONDecodeError, KeyError) as e:
             print(f"Error loading settings: {e}")
 
@@ -205,6 +299,13 @@ class SettingsPage(QWidget):
                 settings = json.load(f)
                 settings["mods_dir"] = self.mods_dir_input.text().strip()
                 settings["images_dir"] = self.images_dir_input.text().strip()
+                settings["java_executable"] = self.java_executable_input.text().strip()
+                settings["jvm_arguments"] = self.jvm_args_input.text().strip()
+                settings["memory_gb"] = self.memory_slider.value()
+                settings["resolution"] = {
+                    "width": self.width_input.text().strip(),
+                    "height": self.height_input.text().strip()
+                }
                 f.seek(0)
                 json.dump(settings, f, indent=4)
                 f.truncate()
@@ -214,9 +315,212 @@ class SettingsPage(QWidget):
                 settings = {
                     "mods_dir": self.mods_dir_input.text().strip(),
                     "images_dir": self.images_dir_input.text().strip(),
+                    "java_executable": self.java_executable_input.text().strip(),
+                    "jvm_arguments": self.jvm_args_input.text().strip(),
+                    "memory_gb": self.memory_slider.value(),
+                    "resolution": {
+                        "width": self.width_input.text().strip(),
+                        "height": self.height_input.text().strip()
+                    }
                 }
                 json.dump(settings, f, indent=4)
-        QMessageBox.information(self, "Settings Saved", "Your settings have been saved. A restart is required for the directory changes to take effect.")
+        QMessageBox.information(self, "Settings Saved", "Your settings have been saved. Some changes may require a restart to take effect.")
+
+
+class SettingsPage(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setObjectName("content_scroll_area")
+
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        # Mods directory setting
+        mods_dir_label = QLabel("MODS DIRECTORY")
+        mods_dir_label.setObjectName("section_label")
+        layout.addWidget(mods_dir_label)
+
+        mods_dir_layout = QHBoxLayout()
+        self.mods_dir_input = QLineEdit()
+        self.mods_dir_input.setPlaceholderText("Enter mods directory path")
+        self.mods_dir_input.setMinimumHeight(55)
+        mods_dir_layout.addWidget(self.mods_dir_input)
+
+        mods_dir_browse_button = QPushButton("Browse")
+        mods_dir_browse_button.setObjectName("secondary_button")
+        mods_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        mods_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.mods_dir_input))
+        mods_dir_layout.addWidget(mods_dir_browse_button)
+        layout.addLayout(mods_dir_layout)
+
+        # Images directory setting
+        images_dir_label = QLabel("BACKGROUND IMAGES DIRECTORY")
+        images_dir_label.setObjectName("section_label")
+        layout.addWidget(images_dir_label)
+
+        images_dir_layout = QHBoxLayout()
+        self.images_dir_input = QLineEdit()
+        self.images_dir_input.setPlaceholderText("Enter images directory path")
+        self.images_dir_input.setMinimumHeight(55)
+        images_dir_layout.addWidget(self.images_dir_input)
+
+        images_dir_browse_button = QPushButton("Browse")
+        images_dir_browse_button.setObjectName("secondary_button")
+        images_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        images_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.images_dir_input))
+        images_dir_layout.addWidget(images_dir_browse_button)
+        layout.addLayout(images_dir_layout)
+
+        # Java executable setting
+        java_executable_label = QLabel("JAVA EXECUTABLE (OPTIONAL)")
+        java_executable_label.setObjectName("section_label")
+        layout.addWidget(java_executable_label)
+
+        java_executable_layout = QHBoxLayout()
+        self.java_executable_input = QLineEdit()
+        self.java_executable_input.setPlaceholderText("Enter Java executable path")
+        self.java_executable_input.setMinimumHeight(55)
+        java_executable_layout.addWidget(self.java_executable_input)
+
+        java_executable_browse_button = QPushButton("Browse")
+        java_executable_browse_button.setObjectName("secondary_button")
+        java_executable_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        java_executable_browse_button.clicked.connect(lambda: self.browse_file(self.java_executable_input))
+        java_executable_layout.addWidget(java_executable_browse_button)
+        layout.addLayout(java_executable_layout)
+
+        # JVM arguments setting
+        jvm_args_label = QLabel("JVM ARGUMENTS (ADVANCED)")
+        jvm_args_label.setObjectName("section_label")
+        layout.addWidget(jvm_args_label)
+
+        self.jvm_args_input = QLineEdit()
+        self.jvm_args_input.setPlaceholderText("-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC")
+        self.jvm_args_input.setMinimumHeight(55)
+        layout.addWidget(self.jvm_args_input)
+
+        # Memory allocation setting
+        memory_label = QLabel("MEMORY ALLOCATION (RAM)")
+        memory_label.setObjectName("section_label")
+        layout.addWidget(memory_label)
+
+        memory_layout = QHBoxLayout()
+        self.memory_slider = QSlider(Qt.Orientation.Horizontal)
+        self.memory_slider.setMinimum(1)
+        self.memory_slider.setMaximum(16) # Assuming max 16GB, can be adjusted
+        self.memory_slider.setValue(4) # Default 4GB
+        self.memory_slider.setTickInterval(1)
+        self.memory_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        memory_layout.addWidget(self.memory_slider)
+
+        self.memory_value_label = QLabel("4 GB")
+        self.memory_value_label.setObjectName("memory_label")
+        self.memory_slider.valueChanged.connect(self.update_memory_label)
+        memory_layout.addWidget(self.memory_value_label)
+        layout.addLayout(memory_layout)
+
+        # Resolution setting
+        resolution_label = QLabel("GAME RESOLUTION")
+        resolution_label.setObjectName("section_label")
+        layout.addWidget(resolution_label)
+
+        resolution_layout = QHBoxLayout()
+        self.width_input = QLineEdit()
+        self.width_input.setPlaceholderText("Width")
+        self.width_input.setMinimumHeight(55)
+        resolution_layout.addWidget(self.width_input)
+
+        self.height_input = QLineEdit()
+        self.height_input.setPlaceholderText("Height")
+        self.height_input.setMinimumHeight(55)
+        resolution_layout.addWidget(self.height_input)
+        layout.addLayout(resolution_layout)
+
+        layout.addStretch(1)
+
+        save_button = QPushButton("Save Settings")
+        save_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        save_button.setMinimumHeight(55)
+        save_button.clicked.connect(self.save_settings)
+        layout.addWidget(save_button)
+        
+        scroll_area.setWidget(container)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.addWidget(scroll_area)
+
+        self.load_settings()
+
+    def browse_file(self, line_edit):
+        file, _ = QFileDialog.getOpenFileName(self, "Select File")
+        if file:
+            line_edit.setText(file)
+
+    def update_memory_label(self, value):
+        self.memory_value_label.setText(f"{value} GB")
+
+    def browse_directory(self, line_edit):
+        directory = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if directory:
+            line_edit.setText(directory)
+
+    def load_settings(self):
+        if not os.path.exists("pymcl/config/settings.json"):
+            return
+
+        try:
+            with open("pymcl/config/settings.json", "r") as f:
+                settings = json.load(f)
+                self.mods_dir_input.setText(settings.get("mods_dir", ""))
+                self.images_dir_input.setText(settings.get("images_dir", ""))
+                self.java_executable_input.setText(settings.get("java_executable", ""))
+                self.jvm_args_input.setText(settings.get("jvm_arguments", ""))
+                self.memory_slider.setValue(settings.get("memory_gb", 4))
+                self.update_memory_label(self.memory_slider.value())
+                resolution = settings.get("resolution", {})
+                self.width_input.setText(resolution.get("width", ""))
+                self.height_input.setText(resolution.get("height", ""))
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Error loading settings: {e}")
+
+    def save_settings(self):
+        try:
+            with open("pymcl/config/settings.json", "r+") as f:
+                settings = json.load(f)
+                settings["mods_dir"] = self.mods_dir_input.text().strip()
+                settings["images_dir"] = self.images_dir_input.text().strip()
+                settings["java_executable"] = self.java_executable_input.text().strip()
+                settings["jvm_arguments"] = self.jvm_args_input.text().strip()
+                settings["memory_gb"] = self.memory_slider.value()
+                settings["resolution"] = {
+                    "width": self.width_input.text().strip(),
+                    "height": self.height_input.text().strip()
+                }
+                f.seek(0)
+                json.dump(settings, f, indent=4)
+                f.truncate()
+        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+            os.makedirs("pymcl/config", exist_ok=True)
+            with open("pymcl/config/settings.json", "w") as f:
+                settings = {
+                    "mods_dir": self.mods_dir_input.text().strip(),
+                    "images_dir": self.images_dir_input.text().strip(),
+                    "java_executable": self.java_executable_input.text().strip(),
+                    "jvm_arguments": self.jvm_args_input.text().strip(),
+                    "memory_gb": self.memory_slider.value(),
+                    "resolution": {
+                        "width": self.width_input.text().strip(),
+                        "height": self.height_input.text().strip()
+                    }
+                }
+                json.dump(settings, f, indent=4)
+        QMessageBox.information(self, "Settings Saved", "Your settings have been saved. Some changes may require a restart to take effect.")
 
 
 class MainWindow(QMainWindow):
@@ -250,6 +554,16 @@ class MainWindow(QMainWindow):
         self.init_background_images()
         self.load_microsoft_info()
         self.load_settings()
+
+    def show(self):
+        super().show()
+        self.setWindowOpacity(0.0)
+        self.animation = QPropertyAnimation(self, b"windowOpacity")
+        self.animation.setDuration(500)
+        self.animation.setStartValue(0.0)
+        self.animation.setEndValue(1.0)
+        self.animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.animation.start()
 
     def load_settings(self):
         if not os.path.exists("pymcl/config/settings.json"):
@@ -347,12 +661,53 @@ class MainWindow(QMainWindow):
         self.update_auth_widgets()
 
     def switch_page(self, index, button):
-        self.stacked_widget.setCurrentIndex(index)
+        current_index = self.stacked_widget.currentIndex()
+        if index == current_index:
+            return
+
+        # Update nav button styles
         for btn in [self.nav_launch_button, self.nav_mods_button, self.nav_settings_button]:
             btn.setObjectName("nav_button")
         button.setObjectName("nav_button_active")
-        # Re-apply stylesheet to update button styles
         self.apply_styles()
+
+        # Animation
+        self.slide_animation = self._create_slide_animation(index, current_index)
+        self.slide_animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+
+    def _create_slide_animation(self, new_index, old_index):
+        width = self.stacked_widget.width()
+        
+        # New widget to slide in
+        new_widget = self.stacked_widget.widget(new_index)
+        new_widget.setGeometry(0, 0, width, self.stacked_widget.height())
+        new_widget.move(width if new_index > old_index else -width, 0)
+        new_widget.show()
+        new_widget.raise_()
+
+        anim_new = QPropertyAnimation(new_widget, b"pos")
+        anim_new.setDuration(300)
+        anim_new.setEndValue(self.stacked_widget.rect().topLeft())
+        anim_new.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        # Old widget to slide out
+        old_widget = self.stacked_widget.widget(old_index)
+        anim_old = QPropertyAnimation(old_widget, b"pos")
+        anim_old.setDuration(300)
+        anim_old.setEndValue(QPoint(width if new_index < old_index else -width, 0))
+        anim_old.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        anim_group = QParallelAnimationGroup()
+        anim_group.addAnimation(anim_new)
+        anim_group.addAnimation(anim_old)
+
+        anim_group.finished.connect(lambda: self.on_animation_finished(new_index, old_widget))
+        return anim_group
+
+    def on_animation_finished(self, new_index, old_widget):
+        self.stacked_widget.setCurrentIndex(new_index)
+        old_widget.hide()
+        old_widget.move(0, 0)
 
     def update_auth_widgets(self):
         auth_method = self.launch_page.auth_method_combo.currentText()
@@ -583,11 +938,28 @@ class MainWindow(QMainWindow):
             self.update_status("⚠️ Please select a version")
             return
 
+        # Load settings to pass to the worker
+        settings = {}
+        if os.path.exists("pymcl/config/settings.json"):
+            try:
+                with open("pymcl/config/settings.json", "r") as f:
+                    settings = json.load(f)
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"Error loading settings for launch: {e}")
+
         options = {
             "username": "",
             "uuid": "",
-            "token": ""
+            "token": "",
+            "executablePath": settings.get("java_executable"),
+            "jvmArguments": settings.get("jvm_arguments", "").split(),
+            "resolutionWidth": settings.get("resolution", {}).get("width"),
+            "resolutionHeight": settings.get("resolution", {}).get("height"),
         }
+
+        memory_gb = settings.get("memory_gb", 4)
+        options["jvmArguments"].append(f"-Xmx{memory_gb}G")
+        options["jvmArguments"].append(f"-Xms{memory_gb}G")
 
         if auth_method == "Offline":
             username = self.launch_page.username_input.text().strip()

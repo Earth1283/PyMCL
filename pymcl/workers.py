@@ -165,10 +165,15 @@ class Worker(QObject):
             set_progress(1, 1)
 
             set_status("Getting launch command...")
+            
+            # Clean up options, removing keys with None or empty values
+            # so that minecraft-launcher-lib can use its defaults.
+            cleaned_options = {k: v for k, v in self.options.items() if v}
+
             command = minecraft_launcher_lib.command.get_minecraft_command(
                 version=self.version_to_launch,
                 minecraft_directory=MINECRAFT_DIR,
-                options=self.options,
+                options=cleaned_options,
             )
 
             set_status("Launching game...")
