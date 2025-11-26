@@ -109,7 +109,6 @@ QPushButton {
     font-size: 15px;
     font-weight: 600;
     min-height: 50px;
-    transition: background-color 0.2s;
 }
 QPushButton:hover {
     background-color: #5badff;
@@ -180,7 +179,6 @@ QCheckBox::indicator {
     border: 2px solid #505050;
     border-radius: 12px;
     background-color: #1e1e1e;
-    transition: border-color 0.2s, background-color 0.2s;
 }
 QCheckBox::indicator:hover {
     border-color: #606060;
@@ -195,7 +193,6 @@ QCheckBox::indicator::handle {
     background-color: #f0f0f0;
     border-radius: 9px;
     margin: 3px;
-    transition: margin-left 0.2s;
 }
 QCheckBox::indicator:checked::handle {
     background-color: #ffffff;
@@ -252,7 +249,6 @@ QPushButton#nav_button, QPushButton#nav_button_active {
     padding: 12px 20px;
     border-radius: 8px;
     min-height: 40px;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 QPushButton#nav_button:hover {
