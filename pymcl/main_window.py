@@ -49,7 +49,7 @@ class LaunchPage(QWidget):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
+        layout.setSpacing(10)
 
         self.auth_method_label = QLabel("AUTHENTICATION")
         self.auth_method_label.setObjectName("section_label")
@@ -62,7 +62,7 @@ class LaunchPage(QWidget):
         self.auth_method_combo.setMinimumHeight(55)
         layout.addWidget(self.auth_method_combo)
 
-        layout.addSpacing(20)
+        layout.addSpacing(15)
 
         self.username_label = QLabel("USERNAME")
         self.username_label.setObjectName("section_label")
@@ -81,7 +81,7 @@ class LaunchPage(QWidget):
         self.microsoft_login_button.setMinimumHeight(55)
         layout.addWidget(self.microsoft_login_button)
 
-        layout.addSpacing(20)
+        layout.addSpacing(15)
 
         version_label = QLabel("MINECRAFT VERSION")
         version_label.setObjectName("section_label")
@@ -94,7 +94,7 @@ class LaunchPage(QWidget):
         self.version_combo.setMinimumHeight(55)
         layout.addWidget(self.version_combo)
 
-        layout.addSpacing(20)
+        layout.addSpacing(15)
 
         mod_layout = QHBoxLayout()
         mod_layout.setSpacing(15)
@@ -111,14 +111,14 @@ class LaunchPage(QWidget):
 
         layout.addLayout(mod_layout)
 
-        layout.addSpacing(20)
+        layout.addSpacing(15)
 
         self.launch_button = QPushButton("🚀 LAUNCH GAME")
         self.launch_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.launch_button.setMinimumHeight(55)
         layout.addWidget(self.launch_button)
 
-        layout.addSpacing(15)
+        layout.addSpacing(10)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 1)

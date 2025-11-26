@@ -61,6 +61,26 @@ class ActionHandler:
 
         return menu
 
+    def create_menu_bar(self):
+        menu_bar = self.main_window.menuBar()
+
+        # File Menu
+        file_menu = menu_bar.addMenu("&File")
+        file_menu.addAction(self.launch_action)
+        file_menu.addSeparator()
+        file_menu.addAction(self.quit_action)
+
+        # Navigate Menu
+        navigate_menu = menu_bar.addMenu("&Navigate")
+        navigate_menu.addAction(self.nav_launch_action)
+        navigate_menu.addAction(self.nav_mods_action)
+        navigate_menu.addAction(self.nav_settings_action)
+        
+        # Mods Menu
+        mods_menu = menu_bar.addMenu("&Mods")
+        mods_menu.addAction(self.refresh_mods_action)
+        mods_menu.addAction(QAction("Open Mods Folder", self.main_window, triggered=self.main_window.mods_page.open_mods_folder))
+
 def setup_actions_and_menus(main_window):
     handler = ActionHandler(main_window)
     main_window.action_handler = handler
@@ -74,6 +94,9 @@ def setup_actions_and_menus(main_window):
         handler.quit_action,
         handler.refresh_mods_action
     ])
+
+    # Create menu bar
+    handler.create_menu_bar()
 
     # Main window context menu
     def show_main_context_menu(pos):

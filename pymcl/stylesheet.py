@@ -334,4 +334,36 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: none;
 }
+
+QMenuBar {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    spacing: 10px;
+}
+QMenuBar::item {
+    padding: 5px 10px;
+    background: transparent;
+    border-radius: 4px;
+}
+QMenuBar::item:selected {
+    background-color: #3c3c3c;
+}
+QMenu {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
+    border: 1px solid #3c3c3c;
+    padding: 5px;
+}
+QMenu::item {
+    padding: 8px 25px;
+    border-radius: 4px;
+}
+QMenu::item:selected {
+    background-color: #4a9eff;
+}
+QMenu::separator {
+    height: 1px;
+    background: #3c3c3c;
+    margin: 5px 0;
+}
 """
