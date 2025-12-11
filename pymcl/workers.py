@@ -76,9 +76,10 @@ class ImageDownloader(QObject):
 class ModDownloader(QObject):
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, url):
+    def __init__(self, url, mods_dir=MODS_DIR):
         super().__init__()
         self.url = url
+        self.mods_dir = mods_dir
 
     @pyqtSlot()
     def run(self):
@@ -101,7 +102,7 @@ class ModDownloader(QObject):
                 if not filename.endswith(".jar"):
                     filename = f"{filename.split('.')[0]}.jar"
 
-            save_path = os.path.join(MODS_DIR, filename)
+            save_path = os.path.join(self.mods_dir, filename)
 
             with open(save_path, "wb") as f:
                 f.write(response.content)

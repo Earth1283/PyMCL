@@ -280,6 +280,18 @@ class ModListWidget(QListWidget):
         event.acceptProposedAction()
 
     def dropEvent(self, event):
+        mods_dir = MODS_DIR
+        try:
+            if os.path.exists("pymcl/config/settings.json"):
+                with open("pymcl/config/settings.json", "r") as f:
+                    settings = json.load(f)
+                    mods_dir = settings.get("mods_dir", MODS_DIR)
+        except:
+            pass
+
+        if not os.path.exists(mods_dir):
+             os.makedirs(mods_dir)
+
         copied_count = 0
         for url in event.mimeData().urls():
             if url.isLocalFile():
@@ -287,9 +299,9 @@ class ModListWidget(QListWidget):
                 if file_path.endswith(".jar"):
                     try:
                         filename = os.path.basename(file_path)
-                        dest_path = os.path.join(MODS_DIR, filename)
+                        dest_path = os.path.join(mods_dir, filename)
                         shutil.copy(file_path, dest_path)
-                        print(f"Copied mod {filename} to {MODS_DIR}")
+                        print(f"Copied mod {filename} to {mods_dir}")
                         copied_count += 1
                     except Exception as e:
                         print(f"Error copying mod {file_path}: {e}")

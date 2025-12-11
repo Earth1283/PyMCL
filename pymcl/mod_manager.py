@@ -1,6 +1,7 @@
 import glob
 import os
 import shutil
+import json
 
 from PyQt6.QtCore import QThread, pyqtSlot, Qt, QUrl
 from PyQt6.QtGui import QDesktopServices
@@ -185,11 +186,25 @@ class ModsPage(QWidget):
         except Exception as e:
             self.download_status_label.setText(f"Error clearing cache: {e}")
 
+    def get_mods_directory(self):
+        try:
+            if os.path.exists("pymcl/config/settings.json"):
+                with open("pymcl/config/settings.json", "r") as f:
+                    settings = json.load(f)
+                    return settings.get("mods_dir", MODS_DIR)
+        except:
+            pass
+        return MODS_DIR
+
     @pyqtSlot()
     def populate_mods_list(self):
         self.mod_list_widget.clear()
         try:
-            jar_files = glob.glob(os.path.join(MODS_DIR, "*.jar"))
+            mods_dir = self.get_mods_directory()
+            if not os.path.exists(mods_dir):
+                 os.makedirs(mods_dir)
+            
+            jar_files = glob.glob(os.path.join(mods_dir, "*.jar"))
             for mod_path in jar_files:
                 item = QListWidgetItem()
                 # We don't set text on item, because we use setItemWidget
@@ -208,7 +223,7 @@ class ModsPage(QWidget):
     @pyqtSlot()
     def open_mods_folder(self):
         try:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(MODS_DIR))
+            QDesktopServices.openUrl(QUrl.fromLocalFile(self.get_mods_directory()))
         except Exception as e:
             print(f"Error opening mods folder: {e}")
 
@@ -252,7 +267,7 @@ class ModsPage(QWidget):
         self.download_status_label.setText(f"Starting download from {url}...")
 
         self.downloader_thread = QThread()
-        self.downloader = ModDownloader(url)
+        self.downloader = ModDownloader(url, self.get_mods_directory())
         self.downloader.moveToThread(self.downloader_thread)
 
         self.downloader_thread.started.connect(self.downloader.run)
