@@ -2,6 +2,8 @@ import glob
 import json
 import os
 import shutil
+import subprocess
+import sys
 from PyQt6 import sip
 import uuid
 from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QUrl, QSize
@@ -35,6 +37,7 @@ from .constants import (
     IMAGES_DIR,
     VERSIONS_CACHE_PATH,
     ICON_CACHE_DIR,
+    MINECRAFT_DIR,
     MicrosoftInfo
 )
 from .mod_manager import ModsPage
@@ -266,6 +269,13 @@ class SettingsPage(QWidget):
         images_dir_layout.addWidget(images_dir_browse_button)
         general_layout.addLayout(images_dir_layout)
         
+        # Open Data Folder Button
+        open_data_dir_button = QPushButton("Open Data Folder")
+        open_data_dir_button.setObjectName("secondary_button")
+        open_data_dir_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        open_data_dir_button.clicked.connect(self.open_data_directory)
+        general_layout.addWidget(open_data_dir_button)
+        
         general_layout.addStretch(1)
         self.tabs.addTab(general_tab, "General")
 
@@ -375,6 +385,21 @@ class SettingsPage(QWidget):
         main_layout.addWidget(save_button)
 
         self.load_settings()
+
+    def open_data_directory(self):
+        path = MINECRAFT_DIR
+        try:
+            if not os.path.exists(path):
+                os.makedirs(path)
+                
+            if sys.platform == "win32":
+                os.startfile(path)
+            elif sys.platform == "darwin":
+                subprocess.run(["open", path])
+            else: # Assuming Linux
+                subprocess.run(["xdg-open", path])
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Could not open data directory: {e}")
 
     def browse_file(self, line_edit):
         file, _ = QFileDialog.getOpenFileName(self, "Select File")
