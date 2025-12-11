@@ -4,8 +4,8 @@ import os
 import shutil
 from PyQt6 import sip
 import uuid
-from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint
-from PyQt6.QtGui import QColor, QFont, QCloseEvent
+from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint, QUrl, QSize
+from PyQt6.QtGui import QColor, QFont, QCloseEvent, QMovie, QPixmap
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -24,7 +24,10 @@ from PyQt6.QtWidgets import (
     QStackedWidget,
     QVBoxLayout,
     QWidget,
+    QStackedLayout,
 )
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PyQt6.QtMultimediaWidgets import QVideoWidget
 
 from .constants import (
     APP_NAME,
@@ -40,6 +43,63 @@ from .microsoft_auth import MicrosoftAuth
 from .actions import setup_actions_and_menus
 from .mod_browser import ModBrowserPage
 
+class BackgroundWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        
+        self.layout = QStackedLayout(self)
+        self.layout.setStackingMode(QStackedLayout.StackingMode.StackOne)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Image/GIF Label
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setScaledContents(True)
+        self.layout.addWidget(self.image_label)
+        
+        # Video
+        self.video_widget = QVideoWidget()
+        self.video_widget.setAspectRatioMode(Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        self.player = QMediaPlayer()
+        self.audio_output = QAudioOutput()
+        self.player.setAudioOutput(self.audio_output)
+        self.player.setVideoOutput(self.video_widget)
+        self.layout.addWidget(self.video_widget)
+        
+        self.movie = None
+        
+    def set_image(self, path):
+        self.player.stop()
+        if self.movie:
+            self.movie.stop()
+            self.movie = None
+            
+        pixmap = QPixmap(path)
+        self.image_label.setPixmap(pixmap)
+        self.layout.setCurrentWidget(self.image_label)
+        
+    def set_gif(self, path):
+        self.player.stop()
+        if self.movie:
+            self.movie.stop()
+            
+        self.movie = QMovie(path)
+        self.image_label.setMovie(self.movie)
+        self.movie.start()
+        self.layout.setCurrentWidget(self.image_label)
+        
+    def set_video(self, path, loop=True, mute=True):
+        if self.movie:
+            self.movie.stop()
+            self.movie = None
+            
+        self.player.setSource(QUrl.fromLocalFile(path))
+        self.player.setLoops(QMediaPlayer.Loops.Infinite if loop else 1)
+        self.audio_output.setMuted(mute)
+            
+        self.layout.setCurrentWidget(self.video_widget)
+        self.player.play()
 
 class LaunchPage(QWidget):
     def __init__(self, parent=None):
@@ -202,6 +262,19 @@ class SettingsPage(QWidget):
         images_dir_layout.addWidget(images_dir_browse_button)
         layout.addLayout(images_dir_layout)
 
+        # Video Settings
+        video_settings_label = QLabel("VIDEO BACKGROUND SETTINGS")
+        video_settings_label.setObjectName("section_label")
+        layout.addWidget(video_settings_label)
+        
+        self.loop_video_check = QCheckBox("Loop Video/GIF")
+        self.loop_video_check.setChecked(True)
+        layout.addWidget(self.loop_video_check)
+        
+        self.mute_video_check = QCheckBox("Mute Video Audio")
+        self.mute_video_check.setChecked(True)
+        layout.addWidget(self.mute_video_check)
+
         # Java executable setting
         java_executable_label = QLabel("JAVA EXECUTABLE (OPTIONAL)")
         java_executable_label.setObjectName("section_label")
@@ -309,6 +382,8 @@ class SettingsPage(QWidget):
                 self.jvm_args_input.setText(settings.get("jvm_arguments", ""))
                 self.memory_slider.setValue(settings.get("memory_gb", 4))
                 self.update_memory_label(self.memory_slider.value())
+                self.loop_video_check.setChecked(settings.get("video_loop", True))
+                self.mute_video_check.setChecked(settings.get("video_mute", True))
                 resolution = settings.get("resolution", {})
                 self.width_input.setText(resolution.get("width", ""))
                 self.height_input.setText(resolution.get("height", ""))
@@ -324,6 +399,8 @@ class SettingsPage(QWidget):
                 settings["java_executable"] = self.java_executable_input.text().strip()
                 settings["jvm_arguments"] = self.jvm_args_input.text().strip()
                 settings["memory_gb"] = self.memory_slider.value()
+                settings["video_loop"] = self.loop_video_check.isChecked()
+                settings["video_mute"] = self.mute_video_check.isChecked()
                 settings["resolution"] = {
                     "width": self.width_input.text().strip(),
                     "height": self.height_input.text().strip()
@@ -340,6 +417,8 @@ class SettingsPage(QWidget):
                     "java_executable": self.java_executable_input.text().strip(),
                     "jvm_arguments": self.jvm_args_input.text().strip(),
                     "memory_gb": self.memory_slider.value(),
+                    "video_loop": self.loop_video_check.isChecked(),
+                    "video_mute": self.mute_video_check.isChecked(),
                     "resolution": {
                         "width": self.width_input.text().strip(),
                         "height": self.height_input.text().strip()
@@ -409,9 +488,22 @@ class MainWindow(QMainWindow):
             print(f"Error loading settings: {e}")
 
     def init_ui(self):
+        # Container for everything using Stacked Layout for background
+        main_container = QWidget()
+        self.setCentralWidget(main_container)
+        
+        self.stack_layout = QStackedLayout(main_container)
+        self.stack_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
+        
+        # Layer 1: Background Widget
+        self.background_widget = BackgroundWidget(self)
+        self.stack_layout.addWidget(self.background_widget)
+        
+        # Layer 2: UI Content
         central_widget = QWidget()
         central_widget.setObjectName("main_central_widget")
-        self.setCentralWidget(central_widget)
+        self.stack_layout.addWidget(central_widget)
+        
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
@@ -593,7 +685,8 @@ class MainWindow(QMainWindow):
                 self.update_status("Failed to refresh token. Please login again.")
 
     def apply_styles(self):
-        self.setStyleSheet(STYLESHEET + self.current_background_style)
+        # We no longer apply background image to stylesheet
+        self.setStyleSheet(STYLESHEET)
 
     def add_shadow_effects(self):
         shadow = QGraphicsDropShadowEffect()
@@ -609,13 +702,14 @@ class MainWindow(QMainWindow):
         self.findChild(QFrame, "title_frame").setGraphicsEffect(title_shadow)
 
     def init_background_images(self):
-        print("Initializing background images...")
-        self.image_files = glob.glob(os.path.join(IMAGES_DIR, "*.png")) + glob.glob(
-            os.path.join(IMAGES_DIR, "*.jpg")
-        )
+        print("Initializing background media...")
+        exts = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.mp4", "*.webm", "*.mkv", "*.avi"]
+        self.image_files = []
+        for ext in exts:
+            self.image_files.extend(glob.glob(os.path.join(IMAGES_DIR, ext)))
 
         if not self.image_files:
-            print("No images found. Downloading default image.")
+            print("No background media found. Downloading default image.")
             self.image_downloader_thread = QThread()
             self.image_downloader = ImageDownloader()
             self.image_downloader.moveToThread(self.image_downloader_thread)
@@ -631,11 +725,11 @@ class MainWindow(QMainWindow):
 
             self.image_downloader_thread.start()
         else:
-            print(f"Found {len(self.image_files)} images.")
+            print(f"Found {len(self.image_files)} media files.")
             self.update_background_image()
 
             if len(self.image_files) > 1:
-                print("Starting background image timer...")
+                print("Starting background timer...")
                 self.bg_timer = QTimer(self)
                 self.bg_timer.timeout.connect(self.update_background_image)
                 self.bg_timer.start(30000)
@@ -659,18 +753,25 @@ class MainWindow(QMainWindow):
             self.image_files
         )
 
-        css_path = path.replace("\\", "/")
-        print(f"Setting background to: {css_path}")
+        print(f"Setting background to: {path}")
 
-        self.current_background_style = f"""
-        QMainWindow {{
-            background-image: url('{css_path}');
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }} """
+        # Load settings for loop/mute
+        loop = True
+        mute = True
+        if os.path.exists("pymcl/config/settings.json"):
+             try:
+                 with open("pymcl/config/settings.json", "r") as f:
+                     settings = json.load(f)
+                     loop = settings.get("video_loop", True)
+                     mute = settings.get("video_mute", True)
+             except: pass
 
-        self.apply_styles()
+        if path.lower().endswith(('.mp4', '.webm', '.mkv', '.avi')):
+            self.background_widget.set_video(path, loop, mute)
+        elif path.lower().endswith('.gif'):
+             self.background_widget.set_gif(path)
+        else:
+             self.background_widget.set_image(path)
 
     @pyqtSlot()
     def open_mod_manager(self):
@@ -891,16 +992,6 @@ class MainWindow(QMainWindow):
         if success and "Game closed" in message:
             self.launch_page.progress_bar.setValue(0)
             self.launch_page.status_label.setText("✓ Ready to launch")
-
-    def clear_cache(self):
-        try:
-            if os.path.exists(ICON_CACHE_DIR):
-                shutil.rmtree(ICON_CACHE_DIR)
-                QMessageBox.information(self, "Cache Cleared", "The icon cache has been cleared.")
-            else:
-                QMessageBox.information(self, "Cache Cleared", "No icon cache to clear.")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not clear cache: {e}")
 
     def clear_cache(self):
         try:
