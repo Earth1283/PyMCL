@@ -1,3 +1,4 @@
+import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMenu
@@ -12,6 +13,18 @@ class ActionHandler:
         self.launch_action = QAction("Launch Game", self.main_window)
         self.launch_action.setShortcut(QKeySequence("Ctrl+L"))
         self.launch_action.triggered.connect(self.main_window.launch_page.launch_button.click)
+        
+        self.open_data_folder_action = QAction("Open Data Folder", self.main_window)
+        self.open_data_folder_action.triggered.connect(self.main_window.settings_page.open_data_directory)
+
+        # View actions
+        self.toggle_fullscreen_action = QAction("Toggle Fullscreen", self.main_window)
+        self.toggle_fullscreen_action.setShortcut(QKeySequence("F11"))
+        self.toggle_fullscreen_action.triggered.connect(self.main_window.toggle_fullscreen)
+
+        # Help actions
+        self.about_action = QAction("About", self.main_window)
+        self.about_action.triggered.connect(self.main_window.show_about_dialog)
 
         # Navigation actions
         self.nav_launch_action = QAction("Go to Launch Page", self.main_window)
@@ -72,12 +85,19 @@ class ActionHandler:
 
     def create_menu_bar(self):
         menu_bar = self.main_window.menuBar()
+        if sys.platform == "darwin":
+            menu_bar.setNativeMenuBar(False)
 
         # File Menu
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction(self.launch_action)
+        file_menu.addAction(self.open_data_folder_action)
         file_menu.addSeparator()
         file_menu.addAction(self.quit_action)
+
+        # View Menu
+        view_menu = menu_bar.addMenu("&View")
+        view_menu.addAction(self.toggle_fullscreen_action)
 
         # Navigate Menu
         navigate_menu = menu_bar.addMenu("&Navigate")
@@ -94,6 +114,10 @@ class ActionHandler:
         # Tools Menu
         tools_menu = menu_bar.addMenu("&Tools")
         tools_menu.addAction(self.clear_cache_action)
+        
+        # Help Menu
+        help_menu = menu_bar.addMenu("&Help")
+        help_menu.addAction(self.about_action)
 
 def setup_actions_and_menus(main_window):
     handler = ActionHandler(main_window)
@@ -107,7 +131,8 @@ def setup_actions_and_menus(main_window):
         handler.nav_browse_mods_action,
         handler.nav_settings_action,
         handler.quit_action,
-        handler.refresh_mods_action
+        handler.refresh_mods_action,
+        handler.toggle_fullscreen_action
     ])
 
     # Create menu bar

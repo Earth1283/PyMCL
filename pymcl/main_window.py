@@ -1052,6 +1052,23 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not clear cache: {e}")
 
+    @pyqtSlot()
+    def toggle_fullscreen(self):
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
+
+    @pyqtSlot()
+    def show_about_dialog(self):
+        QMessageBox.about(
+            self,
+            f"About {APP_NAME}",
+            f"{APP_NAME} - A custom Minecraft Launcher.\n\n"
+            "Developed with Python and PyQt6.\n"
+            "A Python Launcher for a Java game."
+        )
+
     def closeEvent(self, a0: QCloseEvent | None):
         if self.bg_timer:
             self.bg_timer.stop()
