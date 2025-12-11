@@ -393,4 +393,35 @@ QPushButton#download_badge {
 QPushButton#download_badge:hover {
     background-color: #5badff;
 }
+
+/* Tab Widget */
+QTabWidget::pane {
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    background-color: #252525;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background: #1e1e1e;
+    color: #888;
+    padding: 10px 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: 1px solid #3a3a3a;
+    border-bottom: none;
+    margin-right: 2px;
+    font-weight: 600;
+}
+
+QTabBar::tab:selected {
+    background: #252525;
+    color: #4a9eff;
+    border-bottom: 1px solid #252525; /* Blend with pane */
+}
+
+QTabBar::tab:hover:!selected {
+    background: #2a2a2a;
+    color: #ccc;
+}
 """
