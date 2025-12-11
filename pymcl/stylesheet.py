@@ -11,7 +11,7 @@ QMainWindow {
 QFrame#central_widget_frame {
     border: none;
     border-radius: 16px;
-    background-color: rgba(37, 37, 37, 0.85);
+    background-color: rgba(37, 37, 37, 0.5);
     padding: 10px;
 }
 QLabel {
