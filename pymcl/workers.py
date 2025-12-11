@@ -212,7 +212,7 @@ class Worker(QObject):
             set_status("Getting launch command...")
 
             # Clean up options, removing keys with None or empty values
-            # so that minecraft-launcher-lib can use its defaults.
+            # to allow minecraft-launcher-lib to use its defaults for omitted or empty options.
             cleaned_options = {k: v for k, v in self.options.items() if v}
 
             command = minecraft_launcher_lib.command.get_minecraft_command(
