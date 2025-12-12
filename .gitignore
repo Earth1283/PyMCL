@@ -5,3 +5,4 @@ pymcl/config/settings.json
 .idea/
 default_background.jpg
 .DS_Store
+/logs/

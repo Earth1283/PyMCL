@@ -1066,7 +1066,7 @@ class MainWindow(QMainWindow):
             f"About {APP_NAME}",
             f"{APP_NAME} - A custom Minecraft Launcher.\n\n"
             "Developed with Python and PyQt6.\n"
-            "A Python Launcher for a Java game."
+            "A Python Launcher for a Java game. We like to live dangerously."
         )
 
     def closeEvent(self, a0: QCloseEvent | None):
