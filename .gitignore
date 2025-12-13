@@ -6,3 +6,4 @@ pymcl/config/settings.json
 default_background.jpg
 .DS_Store
 /logs/
+/dist
