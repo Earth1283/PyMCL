@@ -575,7 +575,7 @@ class MainWindow(QMainWindow):
         title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         title_frame_layout.addWidget(title_label)
 
-        subtitle_label = QLabel("Offline Minecraft Launcher")
+        subtitle_label = QLabel("Python Minecraft Launcher")
         subtitle_label.setObjectName("subtitle_label")
         subtitle_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         title_frame_layout.addWidget(subtitle_label)
