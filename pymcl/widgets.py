@@ -27,6 +27,7 @@ from .constants import MODS_DIR, ICON_CACHE_DIR
 from .modrinth_client import ModrinthClient
 from .workers import ModDownloader, ProjectFetcher
 from .image_cache import ImageCache
+from .config_manager import ConfigManager
 
 class ModDetailDialog(QDialog):
     def __init__(self, mod_data, modrinth_client: ModrinthClient, parent=None):
@@ -280,14 +281,7 @@ class ModListWidget(QListWidget):
         event.acceptProposedAction()
 
     def dropEvent(self, event):
-        mods_dir = MODS_DIR
-        try:
-            if os.path.exists("pymcl/config/settings.json"):
-                with open("pymcl/config/settings.json", "r") as f:
-                    settings = json.load(f)
-                    mods_dir = settings.get("mods_dir", MODS_DIR)
-        except:
-            pass
+        mods_dir = ConfigManager().get("mods_dir", MODS_DIR)
 
         if not os.path.exists(mods_dir):
              os.makedirs(mods_dir)

@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from .config_manager import ConfigManager
 from .constants import MODS_DIR, ICON_CACHE_DIR
 from .widgets import ModListWidget, InstalledModItem
 from .workers import ModDownloader, UpdateCheckerWorker
@@ -187,14 +188,7 @@ class ModsPage(QWidget):
             self.download_status_label.setText(f"Error clearing cache: {e}")
 
     def get_mods_directory(self):
-        try:
-            if os.path.exists("pymcl/config/settings.json"):
-                with open("pymcl/config/settings.json", "r") as f:
-                    settings = json.load(f)
-                    return settings.get("mods_dir", MODS_DIR)
-        except:
-            pass
-        return MODS_DIR
+        return ConfigManager().get("mods_dir", MODS_DIR)
 
     @pyqtSlot()
     def populate_mods_list(self):

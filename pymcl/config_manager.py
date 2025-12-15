@@ -2,8 +2,20 @@ import json
 import os
 from pathlib import Path
 
-CONFIG_DIR = Path("pymcl/config")
-SETTINGS_FILE = CONFIG_DIR / "settings.json"
+# Determine default data directory (mirrors constants.py logic to avoid circular import)
+if os.name == "nt":
+    DEFAULT_DATA_DIR = Path("D:/pymcl-data")
+else:
+    DEFAULT_DATA_DIR = Path.home() / ".pymcl-data"
+
+# Check for portable settings file first
+LOCAL_SETTINGS = Path("settings.json")
+if LOCAL_SETTINGS.exists():
+    SETTINGS_FILE = LOCAL_SETTINGS
+    CONFIG_DIR = Path(".")
+else:
+    CONFIG_DIR = DEFAULT_DATA_DIR
+    SETTINGS_FILE = CONFIG_DIR / "settings.json"
 
 class ConfigManager:
     _instance = None
