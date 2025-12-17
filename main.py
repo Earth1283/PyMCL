@@ -13,7 +13,7 @@ def start_splash():
 
 if __name__ == "__main__":
     splash_proc = start_splash()
-    
+
     try:
         from pymcl.main import main
         main(splash_proc)

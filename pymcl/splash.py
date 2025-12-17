@@ -24,7 +24,8 @@ TIPS = [
     "Tip: Always back up your saves!",
     "Tip: Make sure your internet connection is stable for downloads.",
     "Tip: Explore new mods on Modrinth.com.",
-    "Tip: PyMCL aims for a smooth and intuitive user experience.",
+    "Tip: Compilation speeds depends on how fast your processor is.",
+    "Tip: Subsequent launches will be much faster.",
 ]
 
 class Splash(tk.Tk):
@@ -43,41 +44,72 @@ class Splash(tk.Tk):
         
         self.configure(bg='#2b2b2b')
         
-        # Main label
-        self.label = tk.Label(
-            self, 
-            text="PyMCL", 
-            font=("Segoe UI", 24, "bold"), 
-            bg='#2b2b2b', 
-            fg='white'
-        )
-        self.label.pack(pady=(40, 10))
+        # Create Canvas for gradient background
+        self.canvas = tk.Canvas(self, width=width, height=height, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
         
-        # Loading text
-        self.loading_label = tk.Label(
-            self, 
-            text="Loading...", 
-            font=("Segoe UI", 12), 
-            bg='#2b2b2b', 
-            fg='#cccccc'
-        )
-        self.loading_label.pack(pady=(0, 20))
+        # Draw gradient
+        color1 = (43, 43, 43)   # Darker blue
+        color2 = (20, 20, 30)
+        
+        for i in range(height):
+            r = int(color1[0] + (color2[0] - color1[0]) * (i / height))
+            g = int(color1[1] + (color2[1] - color1[1]) * (i / height))
+            b = int(color1[2] + (color2[2] - color1[2]) * (i / height))
+            color = f'#{r:02x}{g:02x}{b:02x}'
+            self.canvas.create_line(0, i, width, i, fill=color)
 
-        # Tip label
-        self.tip_label = tk.Label(
-            self,
-            text=random.choice(TIPS),
-            font=("Segoe UI", 10, "italic"),
-            bg='#2b2b2b',
-            fg='#aaaaaa',
-            wraplength=350
+        # "Awaiting PyQt6 Compilation" text
+        self.canvas.create_text(
+            width // 2, 30,
+            text="Awaiting PyQt6 Compilation, Please Wait",
+            font=("Segoe UI", 10),
+            fill='#ffffff'
         )
-        self.tip_label.pack(side="bottom", pady=20)
 
-        # Progress bar (indeterminate)
+        # "PyMCL" text
+        self.canvas.create_text(
+            width // 2, 70,
+            text="PyMCL",
+            font=("Segoe UI", 24, "bold"),
+            fill='white'
+        )
+        
+        # "Loading..." text
+        self.canvas.create_text(
+            width // 2, 110,
+            text="Loading...",
+            font=("Segoe UI", 12),
+            fill='#cccccc'
+        )
+
+        # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=300, mode="indeterminate")
-        self.progress.pack(pady=10)
-        self.progress.start(10)
+        self.canvas.create_window(width // 2, 140, window=self.progress)
+        self.progress.start(5)
+
+        # Prepare tips sequence with priority logic
+        self.tips_sequence = list(TIPS)
+        random.shuffle(self.tips_sequence)
+        
+        target_tip = "Tip: Subsequent launches will be much faster."
+        if target_tip in self.tips_sequence:
+            self.tips_sequence.remove(target_tip)
+            # Insert at random position 0, 1, or 2
+            insert_pos = random.randint(0, min(2, len(self.tips_sequence)))
+            self.tips_sequence.insert(insert_pos, target_tip)
+            
+        self.tip_index = 0
+
+        # Tip text (stored in attribute to update later)
+        self.tip_text_id = self.canvas.create_text(
+            width // 2, 175,
+            text="", # Will be set by update_tip
+            font=("Segoe UI", 10, "italic"),
+            fill='#aaaaaa',
+            width=350,
+            justify="center"
+        )
 
         # Force update to show immediately
         self.update()
@@ -86,8 +118,11 @@ class Splash(tk.Tk):
         self.update_tip()
 
     def update_tip(self):
-        new_tip = random.choice(TIPS)
-        self.tip_label.config(text=new_tip)
+        if not self.tips_sequence:
+            return
+        new_tip = self.tips_sequence[self.tip_index]
+        self.canvas.itemconfigure(self.tip_text_id, text=new_tip)
+        self.tip_index = (self.tip_index + 1) % len(self.tips_sequence)
         self.after(5000, self.update_tip)
 
 def main():
