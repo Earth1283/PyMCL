@@ -24,7 +24,7 @@ def check_dirs() -> None:
     os.makedirs(ICON_CACHE_DIR, exist_ok=True)
 
 
-def main():
+def main(splash_proc=None):
     check_dirs()
     app = QApplication(sys.argv)
 
@@ -36,6 +36,10 @@ def main():
 
     window = MainWindow()
     window.show()
+
+    if splash_proc:
+        splash_proc.terminate()
+
     sys.exit(app.exec())
 
 
