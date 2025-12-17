@@ -16,6 +16,15 @@ TIPS = [
     "Tip: Checking for updates...",
     "Did you know? PyMCL is written in Python.",
     "Tip: Make sure you have Java installed.",
+    "Tip: PyMCL supports Modrinth for easy mod management.",
+    "Tip: Keep an eye on the console for detailed logs.",
+    "Tip: Report bugs and suggest features on GitHub!",
+    "Tip: Have patience, good things take time to load.",
+    "Tip: Customize your game experience with different Minecraft versions.",
+    "Tip: Always back up your saves!",
+    "Tip: Make sure your internet connection is stable for downloads.",
+    "Tip: Explore new mods on Modrinth.com.",
+    "Tip: PyMCL aims for a smooth and intuitive user experience.",
 ]
 
 class Splash(tk.Tk):
@@ -72,6 +81,14 @@ class Splash(tk.Tk):
 
         # Force update to show immediately
         self.update()
+
+        # Start tip cycling
+        self.update_tip()
+
+    def update_tip(self):
+        new_tip = random.choice(TIPS)
+        self.tip_label.config(text=new_tip)
+        self.after(5000, self.update_tip)
 
 def main():
     app = Splash()
