@@ -8,6 +8,7 @@ import uuid
 from PyQt6.QtCore import QThread, pyqtSlot, Qt, QTimer, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QPoint
 from PyQt6.QtGui import QColor, QCloseEvent
 from PyQt6.QtWidgets import (
+    QApplication,
     QFrame,
     QGraphicsDropShadowEffect,
     QHBoxLayout,
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
         self.minecraft_info: MicrosoftInfo | None = None
         self.current_background_style = ""
         self.last_version = None
+        self.is_launching = False
 
         self.image_files = []
         self.current_image_index = 0
@@ -487,6 +489,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def start_launch(self):
+        modifiers = QApplication.keyboardModifiers()
+        if self.is_launching:
+            if modifiers & Qt.KeyboardModifier.ShiftModifier:
+                self.cancel_launch()
+            return
+
         auth_method = self.launch_page.auth_method_combo.currentText()
         version = self.launch_page.version_combo.currentText()
         mod_loader_type = self.launch_page.mod_loader_combo.currentText()
@@ -526,7 +534,7 @@ class MainWindow(QMainWindow):
             options["token"] = self.minecraft_info["access_token"]
             self.save_settings()
 
-        self.launch_page.launch_button.setEnabled(False)
+        self.is_launching = True
         self.launch_page.launch_button.setText("⏳ LAUNCHING...")
         self.launch_page.status_label.setText("Starting worker thread...")
         self.launch_page.progress_bar.setRange(0, 100)
@@ -564,7 +572,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(bool, str)
     def on_launch_finished(self, success, message):
-        self.launch_page.launch_button.setEnabled(True)
+        self.is_launching = False
+        self.launch_page.launch_button.setProperty("class", "")
+        self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
+        self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
+
         self.launch_page.launch_button.setText("🚀 LAUNCH GAME")
         self.launch_page.status_label.setText(message)
         self.launch_page.progress_bar.setRange(0, 1)
@@ -574,6 +586,28 @@ class MainWindow(QMainWindow):
         if success and "Game closed" in message:
             self.launch_page.progress_bar.setValue(0)
             self.launch_page.status_label.setText("✓ Ready to launch")
+
+    def cancel_launch(self):
+        if self.worker:
+            self.worker.cancel()
+            self.update_status("Cancelling launch...")
+            self.launch_page.launch_button.setText("Stopping...")
+
+    def keyPressEvent(self, event):
+        if self.is_launching and event.key() == Qt.Key.Key_Shift:
+            self.launch_page.launch_button.setText("❌ CANCEL LAUNCH")
+            self.launch_page.launch_button.setProperty("class", "destructive")
+            self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
+            self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
+        super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        if self.is_launching and event.key() == Qt.Key.Key_Shift:
+            self.launch_page.launch_button.setText("⏳ LAUNCHING...")
+            self.launch_page.launch_button.setProperty("class", "")
+            self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
+            self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
+        super().keyReleaseEvent(event)
 
     def clear_cache(self):
         try:

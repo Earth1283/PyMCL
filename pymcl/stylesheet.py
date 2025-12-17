@@ -144,6 +144,15 @@ QPushButton#danger_button:hover {
 QPushButton#danger_button:pressed {
     background-color: rgba(255, 80, 80, 0.4);
 }
+QPushButton[class="destructive"] {
+    background-color: rgba(255, 80, 80, 0.8);
+    color: #ffffff;
+    border: 1px solid rgba(255, 80, 80, 1.0);
+}
+QPushButton[class="destructive"]:hover {
+    background-color: rgba(255, 60, 60, 1.0);
+    border-color: rgba(255, 60, 60, 1.0);
+}
 QProgressBar {
     border: none;
     border-radius: 8px;

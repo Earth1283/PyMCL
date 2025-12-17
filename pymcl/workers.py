@@ -167,17 +167,35 @@ class Worker(QObject):
         self.version = version
         self.options = options
         self.mod_loader_type = mod_loader_type
+        self.process = None
+        self._is_cancelled = False
+
+    def cancel(self):
+        self._is_cancelled = True
+        if self.process:
+            try:
+                self.process.terminate()
+            except Exception as e:
+                print(f"Failed to terminate process: {e}")
 
     @pyqtSlot()
     def run(self):
         try:
+            def check_cancelled():
+                if self._is_cancelled:
+                    raise Exception("Launch cancelled by user")
+
             def set_status(text: str) -> None:
+                check_cancelled()
                 self.status.emit(text)
 
             def set_progress(value: int, maximum: int = 100) -> None:
+                check_cancelled()
                 self.progress.emit(value, maximum)
 
             self.version_to_launch = self.version
+            
+            check_cancelled()
 
             set_status(f"Installing Minecraft {self.version}...")
             minecraft_launcher_lib.install.install_minecraft_version(
@@ -187,6 +205,7 @@ class Worker(QObject):
             )
 
             if self.mod_loader_type != "Vanilla":
+                check_cancelled()
                 set_status(f"Installing {self.mod_loader_type}...")
                 try:
                     if self.mod_loader_type == "Fabric":
@@ -211,6 +230,8 @@ class Worker(QObject):
             set_progress(1, 1)
 
             set_status("Getting launch command...")
+            
+            check_cancelled()
 
             # Clean up options, removing keys with None or empty values
             # to allow minecraft-launcher-lib to use its defaults for omitted or empty options.
@@ -224,8 +245,12 @@ class Worker(QObject):
 
             set_status("Launching game...")
             self.progress.emit(0, 0)
-            process = subprocess.Popen(command)
-            process.wait()
+            
+            check_cancelled()
+            
+            self.process = subprocess.Popen(command)
+            self.process.wait()
+            self.process = None # Clear after finish
 
             set_status("Game closed.")
             self.finished.emit(True, "Game closed.")
