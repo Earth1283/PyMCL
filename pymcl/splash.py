@@ -1,9 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 import random
-import sys
-import time
-import threading
 
 TIPS = [
     "Tip: You can right-click on a mod to see more options.",
@@ -45,19 +42,8 @@ class Splash(tk.Tk):
         self.configure(bg='#2b2b2b')
         
         # Create Canvas for gradient background
-        self.canvas = tk.Canvas(self, width=width, height=height, highlightthickness=0)
+        self.canvas = tk.Canvas(self, width=width, height=height, highlightthickness=0, bg='#2b2b2b')
         self.canvas.pack(fill="both", expand=True)
-        
-        # Draw gradient
-        color1 = (43, 43, 43)   # Darker blue
-        color2 = (20, 20, 30)
-        
-        for i in range(height):
-            r = int(color1[0] + (color2[0] - color1[0]) * (i / height))
-            g = int(color1[1] + (color2[1] - color1[1]) * (i / height))
-            b = int(color1[2] + (color2[2] - color1[2]) * (i / height))
-            color = f'#{r:02x}{g:02x}{b:02x}'
-            self.canvas.create_line(0, i, width, i, fill=color)
 
         # "Awaiting PyQt6 Compilation" text
         self.canvas.create_text(

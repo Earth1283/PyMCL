@@ -13,11 +13,13 @@ def start_splash():
 
 if __name__ == "__main__":
     splash_proc = start_splash()
-
-    try:
-        from pymcl.main import main
-        main(splash_proc)
-    except Exception as e:
-        if splash_proc:
-            splash_proc.terminate()
-        raise e
+    
+    # hack to stop the python interpterter of compiling imports
+    if True == True:
+        try:
+            from pymcl.main import main
+            main(splash_proc)
+        except Exception as e:
+            if splash_proc:
+                splash_proc.terminate()
+            raise e
