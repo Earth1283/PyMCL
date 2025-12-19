@@ -181,6 +181,7 @@ class MainWindow(QMainWindow):
 
         self.launch_page = LaunchPage()
         self.settings_page = SettingsPage()
+        self.settings_page.settings_saved.connect(self.reload_background_settings)
         self.mods_page = ModsPage()
         self.mod_browser_page = ModBrowserPage()
 
@@ -202,6 +203,22 @@ class MainWindow(QMainWindow):
         self.launch_page.mod_manager_button.clicked.connect(self.open_mod_manager)
 
         self.update_auth_widgets()
+
+    def reload_background_settings(self):
+        print("Reloading background settings...")
+        if self.bg_timer:
+            self.bg_timer.stop()
+        else:
+             self.bg_timer = QTimer(self)
+             self.bg_timer.timeout.connect(self.update_background_image)
+
+        enable_slideshow = self.config_manager.get("enable_slideshow", True)
+        if enable_slideshow and len(self.image_files) > 1:
+            interval = self.config_manager.get("slideshow_interval", 30) * 1000
+            self.bg_timer.start(interval)
+            print(f"Background timer started with interval: {interval}ms")
+        else:
+             print("Background slideshow disabled or not enough images.")
 
     def switch_page(self, index, button):
         current_index = self.stacked_widget.currentIndex()
@@ -342,10 +359,13 @@ class MainWindow(QMainWindow):
             self.update_background_image()
 
             if len(self.image_files) > 1:
-                print("Starting background timer...")
-                self.bg_timer = QTimer(self)
-                self.bg_timer.timeout.connect(self.update_background_image)
-                self.bg_timer.start(30000)
+                enable_slideshow = self.config_manager.get("enable_slideshow", True)
+                if enable_slideshow:
+                    interval = self.config_manager.get("slideshow_interval", 30) * 1000
+                    print(f"Starting background timer with interval {interval}ms...")
+                    self.bg_timer = QTimer(self)
+                    self.bg_timer.timeout.connect(self.update_background_image)
+                    self.bg_timer.start(interval)
 
     @pyqtSlot(bool, str)
     def on_image_downloaded(self, success, path):
@@ -362,6 +382,13 @@ class MainWindow(QMainWindow):
             return
 
         path = self.image_files[self.current_image_index]
+        
+        if not os.path.exists(path):
+            print(f"Media file not found: {path}")
+            # Try next one
+            self.current_image_index = (self.current_image_index + 1) % len(self.image_files)
+            return
+
         self.current_image_index = (self.current_image_index + 1) % len(
             self.image_files
         )

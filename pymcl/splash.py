@@ -8,11 +8,9 @@ TIPS = [
     "Tip: Check the settings to customize your experience.",
     "Tip: You can drag and drop mods into the window (soon).",
     "Tip: Press F5 to refresh the mod list (if implemented).",
-    "Tip: Launching Minecraft...",
     "Tip: Loading assets...",
-    "Tip: Checking for updates...",
     "Did you know? PyMCL is written in Python.",
-    "Tip: Make sure you have Java installed.",
+    "Tip: Make sure you have Java installed so that you can load mods.",
     "Tip: PyMCL supports Modrinth for easy mod management.",
     "Tip: Keep an eye on the console for detailed logs.",
     "Tip: Report bugs and suggest features on GitHub!",
@@ -53,7 +51,7 @@ class Splash(tk.Tk):
             fill='#ffffff'
         )
 
-        # "PyMCL" text
+        # "PyMCL"
         self.canvas.create_text(
             width // 2, 70,
             text="PyMCL",
@@ -61,7 +59,7 @@ class Splash(tk.Tk):
             fill='white'
         )
         
-        # "Loading..." text
+        # "Loading..."
         self.canvas.create_text(
             width // 2, 110,
             text="Loading...",
@@ -111,7 +109,7 @@ class Splash(tk.Tk):
         self.tip_index = (self.tip_index + 1) % len(self.tips_sequence)
         self.after(5000, self.update_tip)
 
-def main():
+def main(): # small debug section
     app = Splash()
     app.mainloop()
 
