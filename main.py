@@ -22,4 +22,4 @@ if __name__ == "__main__":
         except Exception as e:
             if splash_proc:
                 splash_proc.terminate()
-            raise e
+            raise e # letting the error propagate is a great way to blame the user

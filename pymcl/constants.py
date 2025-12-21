@@ -10,15 +10,30 @@ REDIRECT_URL = "http://localhost:8000"
 config_manager = ConfigManager()
 settings = config_manager.get_all()
 
-MINECRAFT_DIR = settings.get("minecraft_dir", os.path.join("D:\\pymcl-data" if os.name == "nt" else os.path.join(os.path.expanduser("~"), ".pymcl-data")))
-IMAGES_DIR = settings.get("images_dir", os.path.join(MINECRAFT_DIR, "images"))
-MODS_DIR = settings.get("mods_dir", os.path.join(MINECRAFT_DIR, "mods"))
+MINECRAFT_DIR = settings.get("minecraft_dir") or os.path.join("D:\\pymcl-data" if os.name == "nt" else os.path.join(os.path.expanduser("~"), ".pymcl-data"))
+IMAGES_DIR = settings.get("images_dir") or os.path.join(MINECRAFT_DIR, "images")
+MODS_DIR = settings.get("mods_dir") or os.path.join(MINECRAFT_DIR, "mods")
 ICON_CACHE_DIR = os.path.join(MODS_DIR, ".icons")
 
 DEFAULT_IMAGE_URL = "https://sm.ign.com/ign_ap/gallery/m/minecraft-/minecraft-vibrant-visuals-comparison-screenshots_25we.jpg"
 DEFAULT_IMAGE_PATH = os.path.join(IMAGES_DIR, "default_background.jpg")
 VERSIONS_CACHE_PATH = os.path.join(MINECRAFT_DIR, "versions_cache.json")
 MICROSOFT_INFO_PATH = os.path.join(MINECRAFT_DIR, "microsoft_info.json")
+
+
+def get_game_dir(version_id: str) -> str:
+    """Returns the game directory for a specific version instance."""
+    # sanitize version_id to avoid path traversal or invalid characters if necessary
+    # For now, we assume version_id is safe as it comes from the launcher lib
+    if not version_id or version_id == "Loading versions...":
+        return MINECRAFT_DIR # Fallback to default
+    return os.path.join(MINECRAFT_DIR, "instances", version_id)
+
+
+def get_mods_dir(version_id: str) -> str:
+    """Returns the mods directory for a specific version instance."""
+    return os.path.join(get_game_dir(version_id), "mods")
+
 
 class MicrosoftInfo(TypedDict):
     access_token: str

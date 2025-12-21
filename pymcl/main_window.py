@@ -201,6 +201,9 @@ class MainWindow(QMainWindow):
         self.launch_page.microsoft_login_button.clicked.connect(self.start_microsoft_login)
         self.launch_page.launch_button.clicked.connect(self.start_launch)
         self.launch_page.mod_manager_button.clicked.connect(self.open_mod_manager)
+        
+        # Connect version change to mods page
+        self.launch_page.version_combo.currentTextChanged.connect(self.mods_page.set_version)
 
         self.update_auth_widgets()
 
