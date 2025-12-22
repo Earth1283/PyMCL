@@ -272,13 +272,18 @@ class ModListWidget(QListWidget):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             for url in event.mimeData().urls():
-                if url.isLocalFile() and url.toLocalFile().endswith(".jar"):
+                if url.isLocalFile() and url.toLocalFile().lower().endswith(".jar"):
                     event.acceptProposedAction()
                     return
         event.ignore()
 
     def dragMoveEvent(self, event):
-        event.acceptProposedAction()
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if url.isLocalFile() and url.toLocalFile().lower().endswith(".jar"):
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
 
     def dropEvent(self, event):
         mods_dir = ConfigManager().get("mods_dir", MODS_DIR)
@@ -290,7 +295,7 @@ class ModListWidget(QListWidget):
         for url in event.mimeData().urls():
             if url.isLocalFile():
                 file_path = url.toLocalFile()
-                if file_path.endswith(".jar"):
+                if file_path.lower().endswith(".jar"):
                     try:
                         filename = os.path.basename(file_path)
                         dest_path = os.path.join(mods_dir, filename)
