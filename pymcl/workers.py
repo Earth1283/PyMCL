@@ -19,6 +19,7 @@ from .constants import (
     DEFAULT_IMAGE_PATH,
     MODS_DIR,
     ICON_CACHE_DIR,
+    get_game_dir,
 )
 
 
@@ -101,6 +102,9 @@ class ModDownloader(QObject):
                     filename = filename.split("?")[0]
                 if not filename.endswith(".jar"):
                     filename = f"{filename.split('.')[0]}.jar"
+
+            if not os.path.exists(self.mods_dir):
+                os.makedirs(self.mods_dir)
 
             save_path = os.path.join(self.mods_dir, filename)
 
@@ -236,6 +240,13 @@ class Worker(QObject):
             # Clean up options, removing keys with None or empty values
             # to allow minecraft-launcher-lib to use its defaults for omitted or empty options.
             cleaned_options = {k: v for k, v in self.options.items() if v}
+            
+            # Set game directory for instance isolation
+            game_dir = get_game_dir(self.version)
+            if not os.path.exists(game_dir):
+                os.makedirs(game_dir)
+            cleaned_options["gameDirectory"] = game_dir
+            print(f"Launching with game directory: {game_dir}")
 
             command = minecraft_launcher_lib.command.get_minecraft_command(
                 version=self.version_to_launch,
@@ -291,17 +302,18 @@ class ModSearchWorker(QObject):
 class UpdateCheckerWorker(QObject):
     finished = pyqtSignal(dict) # {file_path: new_version_obj}
 
-    def __init__(self, modrinth_client):
+    def __init__(self, modrinth_client, mods_dir=MODS_DIR):
         super().__init__()
         self.client = modrinth_client
+        self.mods_dir = mods_dir
 
     @pyqtSlot()
     def run(self):
         print("UpdateCheckerWorker: Starting update check.")
-        jar_files = glob.glob(os.path.join(MODS_DIR, "*.jar"))
+        jar_files = glob.glob(os.path.join(self.mods_dir, "*.jar"))
         hashes = {} # {sha1: file_path}
         
-        print(f"UpdateCheckerWorker: Found {len(jar_files)} jar files.")
+        print(f"UpdateCheckerWorker: Found {len(jar_files)} jar files in {self.mods_dir}.")
         for path in jar_files:
             try:
                 sha1 = self._calculate_sha1(path)

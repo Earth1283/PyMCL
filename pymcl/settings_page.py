@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -14,12 +14,15 @@ from PyQt6.QtWidgets import (
     QSlider,
     QCheckBox,
     QMessageBox,
+    QSpinBox,
 )
 
 from .constants import MINECRAFT_DIR
 from .config_manager import ConfigManager
 
 class SettingsPage(QWidget):
+    settings_saved = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config_manager = ConfigManager()
@@ -125,7 +128,7 @@ class SettingsPage(QWidget):
         memory_layout = QHBoxLayout()
         self.memory_slider = QSlider(Qt.Orientation.Horizontal)
         self.memory_slider.setMinimum(1)
-        self.memory_slider.setMaximum(16) # Assuming max 16GB, can be adjusted
+        self.memory_slider.setMaximum(32) # Increased to 32GB
         self.memory_slider.setValue(4) # Default 4GB
         self.memory_slider.setTickInterval(1)
         self.memory_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
@@ -169,6 +172,21 @@ class SettingsPage(QWidget):
         video_settings_label.setObjectName("section_label")
         display_layout.addWidget(video_settings_label)
         
+        self.enable_slideshow_check = QCheckBox("Enable Background Slideshow")
+        self.enable_slideshow_check.setChecked(True)
+        display_layout.addWidget(self.enable_slideshow_check)
+
+        slideshow_interval_layout = QHBoxLayout()
+        slideshow_interval_label = QLabel("Slideshow Interval (seconds):")
+        self.slideshow_interval_input = QSpinBox()
+        self.slideshow_interval_input.setRange(5, 3600)
+        self.slideshow_interval_input.setValue(30)
+        self.slideshow_interval_input.setSingleStep(5)
+        slideshow_interval_layout.addWidget(slideshow_interval_label)
+        slideshow_interval_layout.addWidget(self.slideshow_interval_input)
+        slideshow_interval_layout.addStretch(1)
+        display_layout.addLayout(slideshow_interval_layout)
+
         self.loop_video_check = QCheckBox("Loop Video/GIF")
         self.loop_video_check.setChecked(True)
         display_layout.addWidget(self.loop_video_check)
@@ -226,6 +244,8 @@ class SettingsPage(QWidget):
         self.update_memory_label(self.memory_slider.value())
         self.loop_video_check.setChecked(self.config_manager.get("video_loop", True))
         self.mute_video_check.setChecked(self.config_manager.get("video_mute", True))
+        self.enable_slideshow_check.setChecked(self.config_manager.get("enable_slideshow", True))
+        self.slideshow_interval_input.setValue(self.config_manager.get("slideshow_interval", 30))
         
         resolution = self.config_manager.get("resolution", {})
         self.width_input.setText(resolution.get("width", ""))
@@ -239,10 +259,13 @@ class SettingsPage(QWidget):
         self.config_manager.set("memory_gb", self.memory_slider.value())
         self.config_manager.set("video_loop", self.loop_video_check.isChecked())
         self.config_manager.set("video_mute", self.mute_video_check.isChecked())
+        self.config_manager.set("enable_slideshow", self.enable_slideshow_check.isChecked())
+        self.config_manager.set("slideshow_interval", self.slideshow_interval_input.value())
         self.config_manager.set("resolution", {
             "width": self.width_input.text().strip(),
             "height": self.height_input.text().strip()
         })
         
         self.config_manager.save()
+        self.settings_saved.emit()
         QMessageBox.information(self, "Settings Saved", "Your settings have been saved. Some changes may require a restart to take effect.")

@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .config_manager import ConfigManager
-from .constants import MODS_DIR, ICON_CACHE_DIR
+from .constants import MODS_DIR, ICON_CACHE_DIR, get_mods_dir
 from .widgets import ModListWidget, InstalledModItem
 from .workers import ModDownloader, UpdateCheckerWorker
 from .modrinth_client import ModrinthClient
@@ -31,8 +31,13 @@ class ModsPage(QWidget):
         self.downloader = None
         self.modrinth_client = ModrinthClient()
         self.update_thread = None
+        self.current_version = None
 
         self.init_ui()
+        self.populate_mods_list()
+
+    def set_version(self, version):
+        self.current_version = version
         self.populate_mods_list()
 
     def init_ui(self):
@@ -118,7 +123,7 @@ class ModsPage(QWidget):
         self.check_updates_button.setText("Checking for updates...")
         
         self.update_thread = QThread()
-        self.update_worker = UpdateCheckerWorker(self.modrinth_client)
+        self.update_worker = UpdateCheckerWorker(self.modrinth_client, self.get_mods_directory())
         self.update_worker.moveToThread(self.update_thread)
         
         self.update_thread.started.connect(self.update_worker.run)
@@ -188,6 +193,8 @@ class ModsPage(QWidget):
             self.download_status_label.setText(f"Error clearing cache: {e}")
 
     def get_mods_directory(self):
+        if self.current_version and self.current_version != "Loading versions...":
+            return get_mods_dir(self.current_version)
         return ConfigManager().get("mods_dir", MODS_DIR)
 
     @pyqtSlot()

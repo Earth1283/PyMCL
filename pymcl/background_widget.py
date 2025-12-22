@@ -30,9 +30,13 @@ class BackgroundWidget(QWidget):
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
         self.player.setVideoOutput(self.video_widget)
+        self.player.errorOccurred.connect(self._on_media_error)
         self.layout.addWidget(self.video_widget)
         
         self.movie = None
+
+    def _on_media_error(self, error, error_string):
+        print(f"Media Player Error: {error} - {error_string}")
         
     def set_image(self, path):
         self.player.stop()
