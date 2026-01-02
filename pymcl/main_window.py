@@ -41,6 +41,9 @@ from .config_manager import ConfigManager
 from .launch_page import LaunchPage
 from .settings_page import SettingsPage
 from .background_widget import BackgroundWidget
+from .console_window import ConsoleWindow
+from .servers_page import ServersPage
+from .skin_manager import SkinManagerPage
 
 
 class MainWindow(QMainWindow):
@@ -61,6 +64,9 @@ class MainWindow(QMainWindow):
 
         self.image_files = []
         self.current_image_index = 0
+        
+        # New console window
+        self.console_window = ConsoleWindow()
 
         self.setWindowTitle(APP_NAME)
         self.setMinimumSize(900, 500)
@@ -121,9 +127,20 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
 
-        # Left navigation
+        # Left navigation Scroll Area
+        left_scroll = QScrollArea()
+        left_scroll.setWidgetResizable(True)
+        left_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        left_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        left_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        left_scroll.setStyleSheet("background: transparent;") # Transparent background
+        
+        # Left navigation container
         left_widget = QWidget()
         left_widget.setObjectName("left_title_container")
+        # Ensure the widget itself has transparent bg if styled otherwise in stylesheet
+        left_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
+        
         left_layout = QVBoxLayout(left_widget)
         left_layout.setSpacing(5)
         left_layout.setContentsMargins(10, 10, 10, 10)
@@ -150,6 +167,16 @@ class MainWindow(QMainWindow):
         self.nav_launch_button.setCursor(Qt.CursorShape.PointingHandCursor)
         left_layout.addWidget(self.nav_launch_button)
 
+        self.nav_servers_button = QPushButton("Servers")
+        self.nav_servers_button.setObjectName("nav_button")
+        self.nav_servers_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        left_layout.addWidget(self.nav_servers_button)
+
+        self.nav_skins_button = QPushButton("Skins")
+        self.nav_skins_button.setObjectName("nav_button")
+        self.nav_skins_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        left_layout.addWidget(self.nav_skins_button)
+
         self.nav_mods_button = QPushButton("Mods")
         self.nav_mods_button.setObjectName("nav_button")
         self.nav_mods_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -165,8 +192,16 @@ class MainWindow(QMainWindow):
         self.nav_settings_button.setCursor(Qt.CursorShape.PointingHandCursor)
         left_layout.addWidget(self.nav_settings_button)
 
+        self.nav_console_button = QPushButton("Console")
+        self.nav_console_button.setObjectName("nav_button")
+        self.nav_console_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.nav_console_button.clicked.connect(self.show_console)
+        left_layout.addWidget(self.nav_console_button)
+
         left_layout.addStretch(1)
-        main_layout.addWidget(left_widget, 2)
+        
+        left_scroll.setWidget(left_widget)
+        main_layout.addWidget(left_scroll, 2)
 
         # Right content
         content_frame = QFrame()
@@ -184,16 +219,22 @@ class MainWindow(QMainWindow):
         self.settings_page.settings_saved.connect(self.reload_background_settings)
         self.mods_page = ModsPage()
         self.mod_browser_page = ModBrowserPage()
+        self.servers_page = ServersPage()
+        self.skin_manager_page = SkinManagerPage()
 
-        self.stacked_widget.addWidget(self.launch_page)
-        self.stacked_widget.addWidget(self.mods_page)
-        self.stacked_widget.addWidget(self.mod_browser_page)
-        self.stacked_widget.addWidget(self.settings_page)
+        self.stacked_widget.addWidget(self.launch_page)       # Index 0
+        self.stacked_widget.addWidget(self.servers_page)      # Index 1
+        self.stacked_widget.addWidget(self.skin_manager_page) # Index 2
+        self.stacked_widget.addWidget(self.mods_page)         # Index 3
+        self.stacked_widget.addWidget(self.mod_browser_page)  # Index 4
+        self.stacked_widget.addWidget(self.settings_page)     # Index 5
 
         self.nav_launch_button.clicked.connect(lambda: self.switch_page(0, self.nav_launch_button))
-        self.nav_mods_button.clicked.connect(lambda: self.switch_page(1, self.nav_mods_button))
-        self.nav_browse_mods_button.clicked.connect(lambda: self.switch_page(2, self.nav_browse_mods_button))
-        self.nav_settings_button.clicked.connect(lambda: self.switch_page(3, self.nav_settings_button))
+        self.nav_servers_button.clicked.connect(lambda: self.switch_page(1, self.nav_servers_button))
+        self.nav_skins_button.clicked.connect(lambda: self.switch_page(2, self.nav_skins_button))
+        self.nav_mods_button.clicked.connect(lambda: self.switch_page(3, self.nav_mods_button))
+        self.nav_browse_mods_button.clicked.connect(lambda: self.switch_page(4, self.nav_browse_mods_button))
+        self.nav_settings_button.clicked.connect(lambda: self.switch_page(5, self.nav_settings_button))
 
         # Connect signals from launch page to main window slots
         self.launch_page.username_input.textChanged.connect(self.save_settings)
@@ -240,7 +281,7 @@ class MainWindow(QMainWindow):
             self.mod_browser_page.set_launch_filters(version, loader_param)
 
         # Update nav button styles
-        for btn in [self.nav_launch_button, self.nav_mods_button, self.nav_browse_mods_button, self.nav_settings_button]:
+        for btn in [self.nav_launch_button, self.nav_mods_button, self.nav_browse_mods_button, self.nav_settings_button, self.nav_servers_button, self.nav_skins_button]:
             btn.setObjectName("nav_button")
         button.setObjectName("nav_button_active")
         self.apply_styles()
@@ -301,6 +342,7 @@ class MainWindow(QMainWindow):
         self.minecraft_info = info
         self.update_status(f"Logged in as {info['username']}")
         self.launch_page.microsoft_login_button.setText(f"Logged in as {info['username']}")
+        self.skin_manager_page.set_microsoft_info(info)
 
     def load_microsoft_info(self):
         info = self.microsoft_auth.load_microsoft_info()
@@ -314,6 +356,7 @@ class MainWindow(QMainWindow):
                 self.update_status(f"Logged in as {info['username']}")
                 self.launch_page.microsoft_login_button.setText(f"Logged in as {info['username']}")
                 self.launch_page.auth_method_combo.setCurrentText("Microsoft")
+                self.skin_manager_page.set_microsoft_info(info)
             else:
                 self.update_status("Failed to refresh token. Please login again.")
 
@@ -518,6 +561,12 @@ class MainWindow(QMainWindow):
         self.config_manager.save()
 
     @pyqtSlot()
+    def show_console(self):
+        self.console_window.show()
+        self.console_window.raise_()
+        self.console_window.activateWindow()
+
+    @pyqtSlot()
     def start_launch(self):
         modifiers = QApplication.keyboardModifiers()
         if self.is_launching:
@@ -569,6 +618,10 @@ class MainWindow(QMainWindow):
         self.launch_page.status_label.setText("Starting worker thread...")
         self.launch_page.progress_bar.setRange(0, 100)
         self.launch_page.progress_bar.setValue(0)
+        
+        # Clear console and show it
+        self.console_window.clear_logs()
+        self.console_window.show()
 
         self.worker_thread = QThread()
         self.worker = Worker(version, options, mod_loader_type)
@@ -578,6 +631,7 @@ class MainWindow(QMainWindow):
 
         self.worker.progress.connect(self.update_progress)
         self.worker.status.connect(self.update_status)
+        self.worker.log_output.connect(self.console_window.append_log) # Connect logs
         self.worker.finished.connect(self.on_launch_finished)
 
         self.worker.finished.connect(self.worker_thread.quit)

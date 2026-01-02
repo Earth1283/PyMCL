@@ -165,6 +165,7 @@ class Worker(QObject):
     progress = pyqtSignal(int, int)
     status = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
+    log_output = pyqtSignal(str)
 
     def __init__(self, version, options, mod_loader_type):
         super().__init__()
@@ -259,8 +260,30 @@ class Worker(QObject):
             
             check_cancelled()
             
-            self.process = subprocess.Popen(command)
-            self.process.wait()
+            # Launch process with stdout/stderr capture
+            self.process = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT, # Merge stderr into stdout
+                text=True,
+                bufsize=1, # Line buffered
+                encoding='utf-8', 
+                errors='replace'
+            )
+            
+            # Read output line by line
+            while True:
+                if self._is_cancelled:
+                    self.process.terminate()
+                    break
+                
+                line = self.process.stdout.readline()
+                if not line and self.process.poll() is not None:
+                    break
+                
+                if line:
+                    self.log_output.emit(line.strip())
+
             self.process = None # Clear after finish
 
             set_status("Game closed.")
