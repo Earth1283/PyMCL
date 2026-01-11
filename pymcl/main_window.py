@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QStackedLayout,
+    QScrollArea,
 )
 
 from .constants import (
@@ -44,6 +45,7 @@ from .background_widget import BackgroundWidget
 from .console_window import ConsoleWindow
 from .servers_page import ServersPage
 from .skin_manager import SkinManagerPage
+from .toast_manager import ToastManager
 
 
 class MainWindow(QMainWindow):
@@ -77,7 +79,12 @@ class MainWindow(QMainWindow):
         self.microsoft_auth.login_failed.connect(self.update_status)
 
         self.init_ui()
+        
+        # Initialize Toast Manager
+        self.toast_manager = ToastManager(self)
+        
         self.load_settings()
+
         self.apply_styles()
         self.add_shadow_effects()
         self.populate_versions()
@@ -217,6 +224,7 @@ class MainWindow(QMainWindow):
         self.launch_page = LaunchPage()
         self.settings_page = SettingsPage()
         self.settings_page.settings_saved.connect(self.reload_background_settings)
+        self.settings_page.settings_saved.connect(lambda: self.toast_manager.show_toast("Settings have been saved.", "Settings Saved", "SUCCESS"))
         self.mods_page = ModsPage()
         self.mod_browser_page = ModBrowserPage()
         self.servers_page = ServersPage()
@@ -303,14 +311,14 @@ class MainWindow(QMainWindow):
         anim_new = QPropertyAnimation(new_widget, b"pos")
         anim_new.setDuration(300)
         anim_new.setEndValue(self.stacked_widget.rect().topLeft())
-        anim_new.setEasingCurve(QEasingCurve.Type.OutCubic)
+        anim_new.setEasingCurve(QEasingCurve.Type.InOutQuart)
 
         # Old widget to slide out
         old_widget = self.stacked_widget.widget(old_index)
         anim_old = QPropertyAnimation(old_widget, b"pos")
         anim_old.setDuration(300)
         anim_old.setEndValue(QPoint(width if new_index < old_index else -width, 0))
-        anim_old.setEasingCurve(QEasingCurve.Type.OutCubic)
+        anim_old.setEasingCurve(QEasingCurve.Type.InOutQuart)
 
         anim_group = QParallelAnimationGroup()
         anim_group.addAnimation(anim_new)
@@ -318,6 +326,12 @@ class MainWindow(QMainWindow):
 
         anim_group.finished.connect(lambda: self.on_animation_finished(new_index, old_widget))
         return anim_group
+        
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Reposition toasts
+        if hasattr(self, 'toast_manager'):
+            self.toast_manager.reposition_toasts()
 
     def on_animation_finished(self, new_index, old_widget):
         self.stacked_widget.setCurrentIndex(new_index)
@@ -340,6 +354,7 @@ class MainWindow(QMainWindow):
 
     def on_login_success(self, info: MicrosoftInfo):
         self.minecraft_info = info
+        self.toast_manager.show_toast(f"Logged in as {info['username']}", "Login Successful", "SUCCESS")
         self.update_status(f"Logged in as {info['username']}")
         self.launch_page.microsoft_login_button.setText(f"Logged in as {info['username']}")
         self.skin_manager_page.set_microsoft_info(info)
@@ -600,6 +615,8 @@ class MainWindow(QMainWindow):
             username = self.launch_page.username_input.text().strip()
             if not username:
                 self.update_status("⚠️ Please enter a username")
+                self.toast_manager.show_toast("Please enter a username to continue.", "Username Required", "WARNING")
+                self.launch_page.username_input.shake()
                 return
             options["username"] = username
             options["uuid"] = str(uuid.uuid4())
@@ -667,9 +684,15 @@ class MainWindow(QMainWindow):
         self.launch_page.progress_bar.setValue(1 if success else 0)
         self.launch_page.progress_bar.setFormat("%p%")
 
-        if success and "Game closed" in message:
-            self.launch_page.progress_bar.setValue(0)
-            self.launch_page.status_label.setText("✓ Ready to launch")
+        if success:
+            if "Game closed" in message:
+                self.launch_page.progress_bar.setValue(0)
+                self.launch_page.status_label.setText("✓ Ready to launch")
+                self.toast_manager.show_toast("Minecraft session ended.", "Game Closed", "INFO")
+            else:
+                 self.toast_manager.show_toast("Minecraft launched successfully!", "Launch Success", "SUCCESS")
+        else:
+             self.toast_manager.show_toast(message, "Launch Failed", "ERROR")
 
     def cancel_launch(self):
         if self.worker:
@@ -697,9 +720,9 @@ class MainWindow(QMainWindow):
         try:
             if os.path.exists(ICON_CACHE_DIR):
                 shutil.rmtree(ICON_CACHE_DIR)
-                QMessageBox.information(self, "Cache Cleared", "The icon cache has been cleared.")
+                self.toast_manager.show_toast("The icon cache has been cleared.", "Cache Cleared", "SUCCESS")
             else:
-                QMessageBox.information(self, "Cache Cleared", "No icon cache to clear.")
+                self.toast_manager.show_toast("No icon cache to clear.", "Cache Empty", "INFO")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not clear cache: {e}")
 

@@ -429,8 +429,58 @@ QTabBar::tab:selected {
     border-bottom: 1px solid #252525; /* Blend with pane */
 }
 
+
 QTabBar::tab:hover:!selected {
     background: #2a2a2a;
     color: #ccc;
+}
+
+/* Toast Notifications */
+QWidget[class^="Toast_"] {
+    background-color: #252525;
+    border: 1px solid #333;
+    border-radius: 8px;
+    min-height: 50px;
+}
+
+QWidget#Toast_INFO {
+    border-left: 4px solid #4a9eff;
+}
+
+QWidget#Toast_SUCCESS {
+    border-left: 4px solid #4caf50;
+    background-color: #1e261e; /* Subtle green tint */
+}
+
+QWidget#Toast_WARNING {
+    border-left: 4px solid #ff9800;
+    background-color: #26221e; /* Subtle orange tint */
+}
+
+QWidget#Toast_ERROR {
+    border-left: 4px solid #f44336;
+    background-color: #261e1e; /* Subtle red tint */
+}
+
+QLabel#toast_title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+QLabel#toast_message {
+    font-size: 13px;
+    color: #ccc;
+}
+
+QPushButton#toast_close {
+    background: transparent;
+    color: #666;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+QPushButton#toast_close:hover {
+    color: #fff;
 }
 """

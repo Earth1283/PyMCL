@@ -9,8 +9,12 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QComboBox,
     QProgressBar,
+    QComboBox,
+    QProgressBar,
     QScrollArea,
 )
+
+from .animated_widgets import AnimatedButton, AnimatedInput
 
 class LaunchPage(QWidget):
     def __init__(self, parent=None):
@@ -34,6 +38,7 @@ class LaunchPage(QWidget):
         self.auth_method_combo = QComboBox()
         self.auth_method_combo.addItems(["Offline", "Microsoft"])
         self.auth_method_combo.setMinimumHeight(55)
+        self.auth_method_combo.setToolTip("Choose 'Microsoft' for online play or 'Offline' for local play.")
         layout.addWidget(self.auth_method_combo)
 
         layout.addSpacing(15)
@@ -44,15 +49,16 @@ class LaunchPage(QWidget):
 
         layout.addSpacing(5)
 
-        self.username_input = QLineEdit()
+        self.username_input = AnimatedInput()
         self.username_input.setPlaceholderText("Enter your username")
         self.username_input.setText(f"Player{uuid.uuid4().hex[:6]}")
         self.username_input.setMinimumHeight(55)
+        self.username_input.setToolTip("Enter the username you want to use in-game (Offline mode only).")
         layout.addWidget(self.username_input)
 
-        self.microsoft_login_button = QPushButton("Login with Microsoft")
-        self.microsoft_login_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.microsoft_login_button = AnimatedButton("Login with Microsoft")
         self.microsoft_login_button.setMinimumHeight(55)
+        self.microsoft_login_button.setToolTip("Sign in with your Microsoft account to play online.")
         layout.addWidget(self.microsoft_login_button)
 
         layout.addSpacing(15)
@@ -66,6 +72,7 @@ class LaunchPage(QWidget):
         self.version_combo = QComboBox()
         self.version_combo.setPlaceholderText("Loading versions...")
         self.version_combo.setMinimumHeight(55)
+        self.version_combo.setToolTip("Select the Minecraft version to launch.")
         layout.addWidget(self.version_combo)
 
         layout.addSpacing(15)
@@ -80,22 +87,23 @@ class LaunchPage(QWidget):
         self.mod_loader_combo = QComboBox()
         self.mod_loader_combo.addItems(["Vanilla", "Fabric", "Forge", "NeoForge", "Quilt"])
         self.mod_loader_combo.setMinimumHeight(55)
+        self.mod_loader_combo.setToolTip("Choose the mod loader (e.g., Fabric, Forge) or use Vanilla.")
         mod_layout.addWidget(self.mod_loader_combo)
 
         mod_layout.addStretch(1)
 
-        self.mod_manager_button = QPushButton("Manage Mods")
-        self.mod_manager_button.setObjectName("secondary_button")
+        self.mod_manager_button = AnimatedButton("Manage Mods", is_secondary=True)
         self.mod_manager_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.mod_manager_button.setToolTip("Open the Mod Manager to add or remove mods.")
         mod_layout.addWidget(self.mod_manager_button)
 
         layout.addLayout(mod_layout)
 
         layout.addSpacing(15)
 
-        self.launch_button = QPushButton("🚀 LAUNCH GAME")
-        self.launch_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.launch_button = AnimatedButton("🚀 LAUNCH GAME")
         self.launch_button.setMinimumHeight(55)
+        self.launch_button.setToolTip("Start Minecraft with the selected configuration.")
         layout.addWidget(self.launch_button)
 
         layout.addSpacing(10)
