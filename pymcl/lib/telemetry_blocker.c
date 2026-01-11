@@ -19,9 +19,18 @@ const char *BLOCKED_DOMAINS[] = {
     "settings-win.data.microsoft.com",
     "telemetry.minecraft.net",
     "snooper.minecraft.net",
-    "pie.optimizely.com", // Often used for A/B testing/tracking
+    "pie.optimizely.com", // used for A/B testing/tracking, so why not?
     NULL
 };
+
+#define ANSI_CYAN "\033[0;36m"
+#define ANSI_RED "\033[0;31m"
+#define ANSI_RESET "\033[0m"
+
+__attribute__((constructor))
+void setup(void) {
+    fprintf(stderr, "%s[PyMCL] Telemetry Blocker Injected (v1.0)%s\n", ANSI_CYAN, ANSI_RESET);
+}
 
 int is_blocked(const char *node) {
     if (!node) return 0;
@@ -44,7 +53,7 @@ int getaddrinfo(const char *node, const char *service,
                 struct addrinfo **res) {
     
     if (is_blocked(node)) {
-        // fprintf(stderr, "[PyMCL Telemetry Blocker] Redirecting %s to 0.0.0.0\n", node);
+        fprintf(stderr, "%s[PyMCL] 🛡️ BLOCKED connection to: %s%s\n", ANSI_RED, node, ANSI_RESET);
         
         struct addrinfo *info = (struct addrinfo *)calloc(1, sizeof(struct addrinfo));
         if (!info) return EAI_MEMORY;
