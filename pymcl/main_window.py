@@ -281,12 +281,24 @@ class MainWindow(QMainWindow):
         if self.stacked_widget.widget(index) == self.mod_browser_page:
             version = self.launch_page.version_combo.currentText()
             mod_loader = self.launch_page.mod_loader_combo.currentText()
+            
+            # Simple mapping and safety check
             loader_param = None
-            if mod_loader == "Fabric":
+            if mod_loader and mod_loader == "Fabric":
                 loader_param = "fabric"
-            # Add conditions for other loaders if Modrinth API supports them
-            # For now, only Fabric is directly mapped
-            self.mod_browser_page.set_launch_filters(version, loader_param)
+            elif mod_loader and mod_loader == "Forge":
+                loader_param = "forge"
+            elif mod_loader and mod_loader == "NeoForge":
+                loader_param = "neoforge"
+            elif mod_loader and mod_loader == "Quilt":
+                loader_param = "quilt"
+                
+            # Only apply if we have a valid version
+            if version and version != "Loading versions...":
+                self.mod_browser_page.set_launch_filters(version, loader_param)
+            else:
+                # If no version is selected, maybe clear filters or default
+                self.mod_browser_page.set_launch_filters(None, loader_param)
 
         # Update nav button styles
         for btn in [self.nav_launch_button, self.nav_mods_button, self.nav_browse_mods_button, self.nav_settings_button, self.nav_servers_button, self.nav_skins_button]:
@@ -649,6 +661,8 @@ class MainWindow(QMainWindow):
         self.worker.progress.connect(self.update_progress)
         self.worker.status.connect(self.update_status)
         self.worker.log_output.connect(self.console_window.append_log) # Connect logs
+        self.worker.telemetry_active.connect(lambda _, msg: self.toast_manager.show_toast(msg, "Privacy Shield Active", "SUCCESS"))
+        self.worker.telemetry_step.connect(self.settings_page.set_telemetry_status)
         self.worker.finished.connect(self.on_launch_finished)
 
         self.worker.finished.connect(self.worker_thread.quit)

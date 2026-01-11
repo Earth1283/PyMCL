@@ -76,9 +76,18 @@ class SettingsPage(QWidget):
         general_layout.addLayout(images_dir_layout)
         
         # Telemetry Setting
+        telemetry_layout = QHBoxLayout()
         self.disable_telemetry_check = QCheckBox("Disable Microsoft Telemetry")
         self.disable_telemetry_check.setToolTip("Attempts to disable telemetry by modifying game options and using JVM arguments.")
-        general_layout.addWidget(self.disable_telemetry_check)
+        self.disable_telemetry_check.toggled.connect(self.update_telemetry_label_state)
+        telemetry_layout.addWidget(self.disable_telemetry_check)
+        
+        self.telemetry_status_label = QLabel("")
+        self.telemetry_status_label.setStyleSheet("color: gray;")
+        telemetry_layout.addWidget(self.telemetry_status_label)
+        telemetry_layout.addStretch(1)
+        
+        general_layout.addLayout(telemetry_layout)
 
         # Open Data Folder Button
         open_data_dir_button = QPushButton("Open Data Folder")
@@ -252,10 +261,22 @@ class SettingsPage(QWidget):
         self.enable_slideshow_check.setChecked(self.config_manager.get("enable_slideshow", True))
         self.slideshow_interval_input.setValue(self.config_manager.get("slideshow_interval", 30))
         self.disable_telemetry_check.setChecked(self.config_manager.get("disable_telemetry", False))
+        self.update_telemetry_label_state(self.disable_telemetry_check.isChecked())
         
         resolution = self.config_manager.get("resolution", {})
         self.width_input.setText(resolution.get("width", ""))
         self.height_input.setText(resolution.get("height", ""))
+
+    def update_telemetry_label_state(self, checked):
+        if checked:
+            if not self.telemetry_status_label.text():
+                 self.telemetry_status_label.setText("(Enabled)")
+        else:
+            self.telemetry_status_label.setText("")
+
+    def set_telemetry_status(self, text):
+        if self.disable_telemetry_check.isChecked():
+            self.telemetry_status_label.setText(f"({text})")
 
     def save_settings(self):
         self.config_manager.set("mods_dir", self.mods_dir_input.text().strip())

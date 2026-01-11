@@ -167,6 +167,8 @@ class Worker(QObject):
     status = pyqtSignal(str)
     finished = pyqtSignal(bool, str)
     log_output = pyqtSignal(str)
+    telemetry_active = pyqtSignal(bool, str)
+    telemetry_step = pyqtSignal(str)
 
     def __init__(self, version, options, mod_loader_type):
         super().__init__()
@@ -254,6 +256,7 @@ class Worker(QObject):
             config_manager = ConfigManager()
             if config_manager.get("disable_telemetry", False):
                 print("Disabling telemetry features...")
+                self.telemetry_step.emit("Enabling... Patching options")
                 
                 # 1. Modify options.txt
                 options_txt_path = os.path.join(game_dir, "options.txt")
@@ -279,6 +282,7 @@ class Worker(QObject):
                     print(f"Failed to update options.txt: {e}")
 
                 # 2. Add JVM Arguments
+                self.telemetry_step.emit("Enabling... Config JVM args")
                 if "jvmArguments" not in cleaned_options:
                     cleaned_options["jvmArguments"] = []
                 
@@ -301,6 +305,25 @@ class Worker(QObject):
                 cleaned_options["jvmArguments"].extend(telemetry_args)
                 print("Added telemetry-disabling JVM arguments.")
 
+            # Prepare environment for the process
+            env = os.environ.copy()
+            
+            # --- Native Telemetry Blocking (macOS/Linux) ---
+            if config_manager.get("disable_telemetry", False):
+                if sys.platform == "darwin":
+                    self.telemetry_step.emit("Enabling... Injecting blocker")
+                    blocker_lib = os.path.abspath(os.path.join(os.path.dirname(__file__), "lib", "telemetry_blocker.dylib"))
+                    if os.path.exists(blocker_lib):
+                        print(f"Injecting telemetry blocker: {blocker_lib}")
+                        env["DYLD_INSERT_LIBRARIES"] = blocker_lib
+                        # Should also enable flat namespace if needed, but for system funcs it's usually automatic with interposing or just simple preload
+                        env["DYLD_FORCE_FLAT_NAMESPACE"] = "1" 
+                        self.telemetry_active.emit(True, "🛡️ Anti-Telemetry Active: Microsoft domains redirected to 0.0.0.0! 🎈")
+                        self.telemetry_step.emit("Active")
+                    else:
+                        print(f"Telemetry blocker library not found at {blocker_lib}")
+                        self.telemetry_step.emit("Error: Lib missing")
+
             command = minecraft_launcher_lib.command.get_minecraft_command(
                 version=self.version_to_launch,
                 minecraft_directory=MINECRAFT_DIR,
@@ -320,7 +343,8 @@ class Worker(QObject):
                 text=True,
                 bufsize=1, # Line buffered
                 encoding='utf-8', 
-                errors='replace'
+                errors='replace',
+                env=env
             )
             
             # Read output line by line
