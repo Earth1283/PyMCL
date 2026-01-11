@@ -12,6 +12,7 @@ import minecraft_launcher_lib.fabric
 import requests
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
+from .config_manager import ConfigManager
 from .constants import (
     MINECRAFT_DIR,
     VERSIONS_CACHE_PATH,
@@ -248,6 +249,57 @@ class Worker(QObject):
                 os.makedirs(game_dir)
             cleaned_options["gameDirectory"] = game_dir
             print(f"Launching with game directory: {game_dir}")
+
+            # --- Telemetry & Privacy Logic ---
+            config_manager = ConfigManager()
+            if config_manager.get("disable_telemetry", False):
+                print("Disabling telemetry features...")
+                
+                # 1. Modify options.txt
+                options_txt_path = os.path.join(game_dir, "options.txt")
+                try:
+                    current_options = {}
+                    if os.path.exists(options_txt_path):
+                        with open(options_txt_path, "r") as f:
+                            for line in f:
+                                if ":" in line:
+                                    key, val = line.strip().split(":", 1)
+                                    current_options[key] = val
+                    
+                    # Force disable keys
+                    current_options["snooperEnabled"] = "false"
+                    current_options["telemetry"] = "false"
+                    current_options["onboardAccessibility"] = "false" # Often triggers data collection
+                    
+                    with open(options_txt_path, "w") as f:
+                        for key, val in current_options.items():
+                            f.write(f"{key}:{val}\n")
+                    print(f"Updated options.txt at {options_txt_path}")
+                except Exception as e:
+                    print(f"Failed to update options.txt: {e}")
+
+                # 2. Add JVM Arguments
+                if "jvmArguments" not in cleaned_options:
+                    cleaned_options["jvmArguments"] = []
+                
+                # Ensure it's a list (minecraft-launcher-lib handles list or string, but we want list)
+                if isinstance(cleaned_options["jvmArguments"], str):
+                     cleaned_options["jvmArguments"] = cleaned_options["jvmArguments"].split()
+                
+                telemetry_args = [
+                    "-Dminecraft.api.env=custom",
+                    "-Dminecraft.telemetry.target=0.0.0.0",  # Placeholder/Signal
+                    "-Dsnooper.enabled=false",
+                    "-Dlog4j2.formatMsgNoLookups=true",
+                    "-Duser.language=en", # Reduce fingerprinting
+                    "-Duser.country=US",
+                ]
+                
+                # Note: We cannot easily map DNS to 0.0.0.0 via JVM args without an agent or hosts file.
+                # These args are best-effort.
+                
+                cleaned_options["jvmArguments"].extend(telemetry_args)
+                print("Added telemetry-disabling JVM arguments.")
 
             command = minecraft_launcher_lib.command.get_minecraft_command(
                 version=self.version_to_launch,

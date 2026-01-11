@@ -75,6 +75,11 @@ class SettingsPage(QWidget):
         images_dir_layout.addWidget(images_dir_browse_button)
         general_layout.addLayout(images_dir_layout)
         
+        # Telemetry Setting
+        self.disable_telemetry_check = QCheckBox("Disable Microsoft Telemetry")
+        self.disable_telemetry_check.setToolTip("Attempts to disable telemetry by modifying game options and using JVM arguments.")
+        general_layout.addWidget(self.disable_telemetry_check)
+
         # Open Data Folder Button
         open_data_dir_button = QPushButton("Open Data Folder")
         open_data_dir_button.setObjectName("secondary_button")
@@ -246,6 +251,7 @@ class SettingsPage(QWidget):
         self.mute_video_check.setChecked(self.config_manager.get("video_mute", True))
         self.enable_slideshow_check.setChecked(self.config_manager.get("enable_slideshow", True))
         self.slideshow_interval_input.setValue(self.config_manager.get("slideshow_interval", 30))
+        self.disable_telemetry_check.setChecked(self.config_manager.get("disable_telemetry", False))
         
         resolution = self.config_manager.get("resolution", {})
         self.width_input.setText(resolution.get("width", ""))
@@ -261,6 +267,7 @@ class SettingsPage(QWidget):
         self.config_manager.set("video_mute", self.mute_video_check.isChecked())
         self.config_manager.set("enable_slideshow", self.enable_slideshow_check.isChecked())
         self.config_manager.set("slideshow_interval", self.slideshow_interval_input.value())
+        self.config_manager.set("disable_telemetry", self.disable_telemetry_check.isChecked())
         self.config_manager.set("resolution", {
             "width": self.width_input.text().strip(),
             "height": self.height_input.text().strip()
