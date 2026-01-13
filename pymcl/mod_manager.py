@@ -38,6 +38,7 @@ class ModsPage(QWidget):
 
     def set_version(self, version):
         self.current_version = version
+        self.mod_list_widget.set_mods_dir(self.get_mods_directory())
         self.populate_mods_list()
 
     def init_ui(self):
@@ -62,6 +63,7 @@ class ModsPage(QWidget):
         layout.addWidget(drop_label)
 
         self.mod_list_widget = ModListWidget()
+        self.mod_list_widget.set_mods_dir(self.get_mods_directory())
         self.mod_list_widget.mods_changed.connect(self.populate_mods_list)
         layout.addWidget(self.mod_list_widget, 1)
 

@@ -268,6 +268,10 @@ class ModListWidget(QListWidget):
         super().__init__(parent)
         self.setAcceptDrops(True)
         self.setDragDropMode(QListWidget.DragDropMode.DropOnly)
+        self.current_mods_dir = ConfigManager().get("mods_dir", MODS_DIR)
+
+    def set_mods_dir(self, path):
+        self.current_mods_dir = path
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -286,7 +290,7 @@ class ModListWidget(QListWidget):
         event.ignore()
 
     def dropEvent(self, event):
-        mods_dir = ConfigManager().get("mods_dir", MODS_DIR)
+        mods_dir = self.current_mods_dir
 
         if not os.path.exists(mods_dir):
              os.makedirs(mods_dir)
