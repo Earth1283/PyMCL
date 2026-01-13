@@ -481,7 +481,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def open_mod_manager(self):
-        self.switch_page(1, self.nav_mods_button)
+        self.switch_page(3, self.nav_mods_button)
 
     def populate_versions(self):
         self.launch_page.status_label.setText("Loading versions...")
