@@ -595,10 +595,8 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def start_launch(self):
-        modifiers = QApplication.keyboardModifiers()
         if self.is_launching:
-            if modifiers & Qt.KeyboardModifier.ShiftModifier:
-                self.cancel_launch()
+            self.cancel_launch()
             return
 
         auth_method = self.launch_page.auth_method_combo.currentText()
@@ -643,7 +641,11 @@ class MainWindow(QMainWindow):
             self.save_settings()
 
         self.is_launching = True
-        self.launch_page.launch_button.setText("⏳ LAUNCHING...")
+        self.launch_page.launch_button.setText("❌ CANCEL LAUNCH")
+        self.launch_page.launch_button.setProperty("class", "destructive")
+        self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
+        self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
+        
         self.launch_page.status_label.setText("Starting worker thread...")
         self.launch_page.progress_bar.setRange(0, 100)
         self.launch_page.progress_bar.setValue(0)
@@ -713,22 +715,6 @@ class MainWindow(QMainWindow):
             self.worker.cancel()
             self.update_status("Cancelling launch...")
             self.launch_page.launch_button.setText("Stopping...")
-
-    def keyPressEvent(self, event):
-        if self.is_launching and event.key() == Qt.Key.Key_Shift:
-            self.launch_page.launch_button.setText("❌ CANCEL LAUNCH")
-            self.launch_page.launch_button.setProperty("class", "destructive")
-            self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
-            self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
-        super().keyPressEvent(event)
-
-    def keyReleaseEvent(self, event):
-        if self.is_launching and event.key() == Qt.Key.Key_Shift:
-            self.launch_page.launch_button.setText("⏳ LAUNCHING...")
-            self.launch_page.launch_button.setProperty("class", "")
-            self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
-            self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
-        super().keyReleaseEvent(event)
 
     def clear_cache(self):
         try:

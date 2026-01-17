@@ -10,7 +10,7 @@ import hashlib
 import minecraft_launcher_lib
 import minecraft_launcher_lib.fabric
 import requests
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QRunnable, QThreadPool
 
 from .config_manager import ConfigManager
 from .constants import (
@@ -118,6 +118,36 @@ class ModDownloader(QObject):
             error_msg = f"Error downloading mod: {str(e)}"
             print(error_msg)
             self.finished.emit(False, error_msg)
+
+
+class WorkerSignals(QObject):
+    finished = pyqtSignal(str, str)
+
+
+class IconDownloadRunnable(QRunnable):
+    def __init__(self, url, mod_id):
+        super().__init__()
+        self.url = url
+        self.mod_id = mod_id
+        self.signals = WorkerSignals()
+
+    def run(self):
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()
+
+            # Create a unique filename for the icon
+            filename = f"{self.mod_id}.png"
+            save_path = os.path.join(ICON_CACHE_DIR, filename)
+
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+            with open(save_path, "wb") as f:
+                f.write(response.content)
+            self.signals.finished.emit(self.mod_id, save_path)
+        except Exception as e:
+            print(f"Error downloading icon: {e}")
+            self.signals.finished.emit(self.mod_id, "")
 
 
 class IconDownloader(QObject):

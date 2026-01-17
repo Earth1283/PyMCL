@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, pyqtSlot, QThread, QSize, QTimer
+from PyQt6.QtCore import Qt, pyqtSlot, QThread, QSize, QTimer, QThreadPool
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
 import requests
 import json
 
-from .workers import ModDownloader, IconDownloader, ModSearchWorker
+from .workers import ModDownloader, IconDownloadRunnable, ModSearchWorker
 from .widgets import ModListItem, ModDetailDialog
 from .modrinth_client import ModrinthClient
 
@@ -177,16 +177,9 @@ class ModBrowserPage(QWidget):
 
             icon_url = mod.get("icon_url")
             if icon_url:
-                thread = QThread()
-                downloader = IconDownloader(icon_url, mod.get("project_id"))
-                downloader.moveToThread(thread)
-                thread.started.connect(downloader.run)
-                downloader.finished.connect(self.on_icon_downloaded)
-                downloader.finished.connect(thread.quit)
-                downloader.finished.connect(downloader.deleteLater)
-                thread.finished.connect(thread.deleteLater)
-                thread.start()
-                self.threads.append(thread)
+                runnable = IconDownloadRunnable(icon_url, mod.get("project_id"))
+                runnable.signals.finished.connect(self.on_icon_downloaded)
+                QThreadPool.globalInstance().start(runnable)
 
     @pyqtSlot(dict)
     def show_mod_detail(self, mod_data):
