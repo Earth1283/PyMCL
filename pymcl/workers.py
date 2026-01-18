@@ -232,7 +232,7 @@ class Worker(QObject):
                 self.progress.emit(value, maximum)
 
             self.version_to_launch = self.version
-            
+
             check_cancelled()
 
             set_status(f"Installing Minecraft {self.version}...")
@@ -268,13 +268,13 @@ class Worker(QObject):
             set_progress(1, 1)
 
             set_status("Getting launch command...")
-            
+
             check_cancelled()
 
             # Clean up options, removing keys with None or empty values
             # to allow minecraft-launcher-lib to use its defaults for omitted or empty options.
             cleaned_options = {k: v for k, v in self.options.items() if v}
-            
+
             # Set game directory for instance isolation
             game_dir = get_game_dir(self.version)
             if not os.path.exists(game_dir):
@@ -287,7 +287,7 @@ class Worker(QObject):
             if config_manager.get("disable_telemetry", False):
                 print("Disabling telemetry features...")
                 self.telemetry_step.emit("Enabling... Patching options")
-                
+
                 # 1. Modify options.txt
                 options_txt_path = os.path.join(game_dir, "options.txt")
                 try:
@@ -298,12 +298,12 @@ class Worker(QObject):
                                 if ":" in line:
                                     key, val = line.strip().split(":", 1)
                                     current_options[key] = val
-                    
+
                     # Force disable keys
                     current_options["snooperEnabled"] = "false"
                     current_options["telemetry"] = "false"
                     current_options["onboardAccessibility"] = "false" # Often triggers data collection
-                    
+
                     with open(options_txt_path, "w") as f:
                         for key, val in current_options.items():
                             f.write(f"{key}:{val}\n")
@@ -315,11 +315,11 @@ class Worker(QObject):
                 self.telemetry_step.emit("Enabling... Config JVM args")
                 if "jvmArguments" not in cleaned_options:
                     cleaned_options["jvmArguments"] = []
-                
+
                 # Ensure it's a list (minecraft-launcher-lib handles list or string, but we want list)
                 if isinstance(cleaned_options["jvmArguments"], str):
                      cleaned_options["jvmArguments"] = cleaned_options["jvmArguments"].split()
-                
+
                 telemetry_args = [
                     "-Dminecraft.api.env=custom",
                     "-Dminecraft.telemetry.target=0.0.0.0",  # Placeholder/Signal
@@ -328,16 +328,16 @@ class Worker(QObject):
                     "-Duser.language=en", # Reduce fingerprinting
                     "-Duser.country=US",
                 ]
-                
+
                 # Note: We cannot easily map DNS to 0.0.0.0 via JVM args without an agent or hosts file.
                 # These args are best-effort.
-                
+
                 cleaned_options["jvmArguments"].extend(telemetry_args)
                 print("Added telemetry-disabling JVM arguments.")
 
             # Prepare environment for the process
             env = os.environ.copy()
-            
+
             # --- Native Telemetry Blocking (macOS/Linux) ---
             if config_manager.get("disable_telemetry", False):
                 if sys.platform == "darwin":
@@ -347,7 +347,7 @@ class Worker(QObject):
                         print(f"Injecting telemetry blocker: {blocker_lib}")
                         env["DYLD_INSERT_LIBRARIES"] = blocker_lib
                         # Should also enable flat namespace if needed, but for system funcs it's usually automatic with interposing or just simple preload
-                        env["DYLD_FORCE_FLAT_NAMESPACE"] = "1" 
+                        env["DYLD_FORCE_FLAT_NAMESPACE"] = "1"
                         self.telemetry_active.emit(True, "🛡️ Anti-Telemetry Active: Microsoft domains redirected to 0.0.0.0! 🎈")
                         self.telemetry_step.emit("Active")
                     else:
@@ -362,9 +362,9 @@ class Worker(QObject):
 
             set_status("Launching game...")
             self.progress.emit(0, 0)
-            
+
             check_cancelled()
-            
+
             # Launch process with stdout/stderr capture
             self.process = subprocess.Popen(
                 command,
@@ -372,21 +372,21 @@ class Worker(QObject):
                 stderr=subprocess.STDOUT, # Merge stderr into stdout
                 text=True,
                 bufsize=1, # Line buffered
-                encoding='utf-8', 
+                encoding='utf-8',
                 errors='replace',
                 env=env
             )
-            
+
             # Read output line by line
             while True:
                 if self._is_cancelled:
                     self.process.terminate()
                     break
-                
+
                 line = self.process.stdout.readline()
                 if not line and self.process.poll() is not None:
                     break
-                
+
                 if line:
                     self.log_output.emit(line.strip())
 
@@ -441,7 +441,7 @@ class UpdateCheckerWorker(QObject):
         print("UpdateCheckerWorker: Starting update check.")
         jar_files = glob.glob(os.path.join(self.mods_dir, "*.jar"))
         hashes = {} # {sha1: file_path}
-        
+
         print(f"UpdateCheckerWorker: Found {len(jar_files)} jar files in {self.mods_dir}.")
         for path in jar_files:
             try:
@@ -450,7 +450,7 @@ class UpdateCheckerWorker(QObject):
                 print(f"UpdateCheckerWorker: Hashed {os.path.basename(path)}: {sha1}")
             except Exception as e:
                 print(f"UpdateCheckerWorker: Error hashing {path}: {e}")
-        
+
         if not hashes:
             print("UpdateCheckerWorker: No mods to check for updates.")
             self.finished.emit({})
@@ -460,14 +460,14 @@ class UpdateCheckerWorker(QObject):
         # Modrinth API allows bulk check
         updates = self.client.get_updates(list(hashes.keys()))
         print(f"UpdateCheckerWorker: Received update response from Modrinth. Found {len(updates)} updates.")
-        
+
         # Map back to file paths: {file_path: new_version_data}
         result = {}
         for h, version in updates.items():
              if h in hashes:
                  result[hashes[h]] = version
                  print(f"UpdateCheckerWorker: Update available for {os.path.basename(hashes[h])}")
-        
+
         print(f"UpdateCheckerWorker: Update check finished. Total updates found: {len(result)}")
         self.finished.emit(result)
 

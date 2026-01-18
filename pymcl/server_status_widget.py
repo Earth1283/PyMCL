@@ -38,7 +38,7 @@ class ServerCard(QFrame):
         super().__init__(parent)
         self.ip = ip
         self.worker = None
-        
+
         self.setObjectName("card")
         self.setStyleSheet("""
             QFrame#card {
@@ -47,7 +47,7 @@ class ServerCard(QFrame):
                 border: 1px solid rgba(255, 255, 255, 0.1);
             }
         """)
-        
+
         self.init_ui()
         self.refresh()
 
@@ -56,9 +56,9 @@ class ServerCard(QFrame):
         menu = QMenu(self)
         remove_action = menu.addAction("Remove Server")
         refresh_action = menu.addAction("Refresh Status")
-        
+
         action = menu.exec(event.globalPos())
-        
+
         if action == remove_action:
             self.remove_requested.emit(self.ip)
         elif action == refresh_action:
@@ -78,16 +78,16 @@ class ServerCard(QFrame):
         # Info Layout
         info_layout = QVBoxLayout()
         info_layout.setSpacing(2)
-        
+
         # Header Row: Hostname | Remove Button
         header_layout = QHBoxLayout()
-        
+
         self.hostname_label = QLabel(self.ip)
         self.hostname_label.setStyleSheet("font-weight: bold; font-size: 16px; color: white;")
         header_layout.addWidget(self.hostname_label)
-        
+
         header_layout.addStretch(1)
-        
+
         self.remove_button = QPushButton("✕")
         self.remove_button.setFixedSize(24, 24)
         self.remove_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -106,21 +106,21 @@ class ServerCard(QFrame):
         """)
         self.remove_button.clicked.connect(lambda: self.remove_requested.emit(self.ip))
         header_layout.addWidget(self.remove_button)
-        
+
         info_layout.addLayout(header_layout)
 
         # Online Status & Players
         self.status_label = QLabel("Checking...")
         self.status_label.setStyleSheet("color: #cccccc;")
         info_layout.addWidget(self.status_label)
-        
+
         # MOTD
         self.motd_label = QLabel()
         self.motd_label.setWordWrap(True)
         self.motd_label.setStyleSheet("color: #aaaaaa; font-style: italic; font-size: 11px;")
         self.motd_label.setMaximumHeight(40)
         info_layout.addWidget(self.motd_label)
-        
+
         layout.addLayout(info_layout, 0, 1, 2, 1)
 
     def refresh(self):
@@ -138,25 +138,25 @@ class ServerCard(QFrame):
     @pyqtSlot(dict)
     def on_success(self, data):
         online = data.get("online", False)
-        
+
         if online:
             hostname = data.get("hostname", self.ip)
             # Prefer showing the friendly hostname if available, but keep IP in tooltip
             self.hostname_label.setText(hostname)
             self.hostname_label.setToolTip(self.ip)
-            
+
             players = data.get("players", {})
             online_players = players.get("online", 0)
             max_players = players.get("max", 0)
             version = data.get("version", "Unknown")
-            
+
             self.status_label.setText(f"🟢 Online  •  {online_players}/{max_players} Players  •  {version}")
-            
+
             # MOTD
             motd = data.get("motd", {})
             clean_motd = motd.get("clean", [])
             self.motd_label.setText("\n".join(clean_motd) if clean_motd else "")
-            
+
             # Icon
             icon_data = data.get("icon")
             if icon_data and icon_data.startswith("data:image/png;base64,"):

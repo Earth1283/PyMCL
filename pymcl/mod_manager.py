@@ -123,17 +123,17 @@ class ModsPage(QWidget):
         print("--- Starting mod update check ---")
         self.check_updates_button.setEnabled(False)
         self.check_updates_button.setText("Checking for updates...")
-        
+
         self.update_thread = QThread()
         self.update_worker = UpdateCheckerWorker(self.modrinth_client, self.get_mods_directory())
         self.update_worker.moveToThread(self.update_thread)
-        
+
         self.update_thread.started.connect(self.update_worker.run)
         self.update_worker.finished.connect(self.on_updates_found)
         self.update_worker.finished.connect(self.update_thread.quit)
         self.update_worker.finished.connect(self.update_worker.deleteLater)
         self.update_thread.finished.connect(self.update_thread.deleteLater)
-        
+
         self.update_thread.start()
         print("UpdateCheckerWorker started.")
 
@@ -141,17 +141,17 @@ class ModsPage(QWidget):
     def on_updates_found(self, updates):
         self.check_updates_button.setEnabled(True)
         self.check_updates_button.setText("Check for Mod Updates")
-        
+
         count = 0
         for i in range(self.mod_list_widget.count()):
             item = self.mod_list_widget.item(i)
             mod_path = item.data(Qt.ItemDataRole.UserRole)
             widget = self.mod_list_widget.itemWidget(item)
-            
+
             if mod_path in updates and isinstance(widget, InstalledModItem):
                 widget.show_update(updates[mod_path])
                 count += 1
-                
+
         if count > 0:
             self.download_status_label.setText(f"Found {count} available updates!")
         else:
@@ -162,11 +162,11 @@ class ModsPage(QWidget):
         # This handles the click on "UPDATE AVAILABLE"
         files = new_version_data.get("files", [])
         primary_file = next((f for f in files if f.get("primary")), files[0] if files else None)
-        
+
         if not primary_file:
             QMessageBox.warning(self, "Error", "Could not find file to download for update.")
             return
-            
+
         url = primary_file.get("url")
         if not url:
             return
@@ -177,7 +177,7 @@ class ModsPage(QWidget):
                 os.remove(old_path)
         except Exception as e:
              print(f"Error removing old mod: {e}")
-             
+
         # Start download of new one
         self.url_input.setText(url)
         self.start_mod_download()
@@ -206,20 +206,20 @@ class ModsPage(QWidget):
             mods_dir = self.get_mods_directory()
             if not os.path.exists(mods_dir):
                  os.makedirs(mods_dir)
-            
+
             jar_files = glob.glob(os.path.join(mods_dir, "*.jar"))
             for mod_path in jar_files:
                 item = QListWidgetItem()
                 # We don't set text on item, because we use setItemWidget
                 item.setData(Qt.ItemDataRole.UserRole, mod_path)
-                
+
                 widget = InstalledModItem(mod_path)
                 widget.update_clicked.connect(self.on_update_mod)
-                
+
                 item.setSizeHint(widget.sizeHint())
                 self.mod_list_widget.addItem(item)
                 self.mod_list_widget.setItemWidget(item, widget)
-                
+
         except Exception as e:
             print(f"Error populating mods list: {e}")
 

@@ -324,7 +324,7 @@ class InstalledModItem(QWidget):
     def init_ui(self):
         # Make the widget background transparent so the list item selection shows through
         self.setStyleSheet("background: transparent; min-height: 40px;")
-        
+
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(10)
@@ -332,7 +332,7 @@ class InstalledModItem(QWidget):
         filename = os.path.basename(self.mod_path)
         self.name_label = QLabel(filename)
         # Ensure label text is visible against the list item background
-        self.name_label.setStyleSheet("color: #f0f0f0; background: transparent; border: none; font-size: 16px; vertical-align: middle;") 
+        self.name_label.setStyleSheet("color: #f0f0f0; background: transparent; border: none; font-size: 16px; vertical-align: middle;")
         layout.addWidget(self.name_label)
 
         layout.addStretch(1)

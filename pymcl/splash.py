@@ -27,7 +27,7 @@ class Splash(tk.Tk):
     def __init__(self):
         super().__init__()
         self.overrideredirect(True)  # Frameless window
-        
+
         # Set size and center
         width = 400
         height = 200
@@ -36,9 +36,9 @@ class Splash(tk.Tk):
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
-        
+
         self.configure(bg='#2b2b2b')
-        
+
         # Create Canvas for gradient background
         self.canvas = tk.Canvas(self, width=width, height=height, highlightthickness=0, bg='#2b2b2b')
         self.canvas.pack(fill="both", expand=True)
@@ -58,7 +58,7 @@ class Splash(tk.Tk):
             font=("Segoe UI", 24, "bold"),
             fill='white'
         )
-        
+
         # "Loading..."
         self.canvas.create_text(
             width // 2, 110,
@@ -75,14 +75,14 @@ class Splash(tk.Tk):
         # Prepare tips sequence with priority logic
         self.tips_sequence = list(TIPS)
         random.shuffle(self.tips_sequence)
-        
+
         target_tip = "Tip: Subsequent launches will be much faster."
         if target_tip in self.tips_sequence:
             self.tips_sequence.remove(target_tip)
             # Insert at random position 0, 1, or 2
             insert_pos = random.randint(0, min(2, len(self.tips_sequence)))
             self.tips_sequence.insert(insert_pos, target_tip)
-            
+
         self.tip_index = 0
 
         # Tip text (stored in attribute to update later)

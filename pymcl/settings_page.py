@@ -26,19 +26,19 @@ class SettingsPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.config_manager = ConfigManager()
-        
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         self.tabs = QTabWidget()
         main_layout.addWidget(self.tabs)
-        
+
         # --- General Tab ---
         general_tab = QWidget()
         general_layout = QVBoxLayout(general_tab)
         general_layout.setContentsMargins(20, 20, 20, 20)
         general_layout.setSpacing(15)
-        
+
         # Mods directory setting
         mods_dir_label = QLabel("MODS DIRECTORY")
         mods_dir_label.setObjectName("section_label")
@@ -74,19 +74,19 @@ class SettingsPage(QWidget):
         images_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.images_dir_input))
         images_dir_layout.addWidget(images_dir_browse_button)
         general_layout.addLayout(images_dir_layout)
-        
+
         # Telemetry Setting
         telemetry_layout = QHBoxLayout()
         self.disable_telemetry_check = QCheckBox("Disable Microsoft Telemetry")
         self.disable_telemetry_check.setToolTip("Attempts to disable telemetry by modifying game options and using JVM arguments.")
         self.disable_telemetry_check.toggled.connect(self.update_telemetry_label_state)
         telemetry_layout.addWidget(self.disable_telemetry_check)
-        
+
         self.telemetry_status_label = QLabel("")
         self.telemetry_status_label.setStyleSheet("color: gray;")
         telemetry_layout.addWidget(self.telemetry_status_label)
         telemetry_layout.addStretch(1)
-        
+
         general_layout.addLayout(telemetry_layout)
 
         # Open Data Folder Button
@@ -95,7 +95,7 @@ class SettingsPage(QWidget):
         open_data_dir_button.setCursor(Qt.CursorShape.PointingHandCursor)
         open_data_dir_button.clicked.connect(self.open_data_directory)
         general_layout.addWidget(open_data_dir_button)
-        
+
         general_layout.addStretch(1)
         self.tabs.addTab(general_tab, "General")
 
@@ -153,7 +153,7 @@ class SettingsPage(QWidget):
         self.memory_slider.valueChanged.connect(self.update_memory_label)
         memory_layout.addWidget(self.memory_value_label)
         java_layout.addLayout(memory_layout)
-        
+
         java_layout.addStretch(1)
         self.tabs.addTab(java_tab, "Java & Performance")
 
@@ -185,7 +185,7 @@ class SettingsPage(QWidget):
         video_settings_label = QLabel("VIDEO BACKGROUND SETTINGS")
         video_settings_label.setObjectName("section_label")
         display_layout.addWidget(video_settings_label)
-        
+
         self.enable_slideshow_check = QCheckBox("Enable Background Slideshow")
         self.enable_slideshow_check.setChecked(True)
         display_layout.addWidget(self.enable_slideshow_check)
@@ -204,11 +204,11 @@ class SettingsPage(QWidget):
         self.loop_video_check = QCheckBox("Loop Video/GIF")
         self.loop_video_check.setChecked(True)
         display_layout.addWidget(self.loop_video_check)
-        
+
         self.mute_video_check = QCheckBox("Mute Video Audio")
         self.mute_video_check.setChecked(True)
         display_layout.addWidget(self.mute_video_check)
-        
+
         display_layout.addStretch(1)
         self.tabs.addTab(display_tab, "Display & Media")
 
@@ -226,7 +226,7 @@ class SettingsPage(QWidget):
         try:
             if not os.path.exists(path):
                 os.makedirs(path)
-                
+
             if sys.platform == "win32":
                 os.startfile(path)
             elif sys.platform == "darwin":
@@ -262,7 +262,7 @@ class SettingsPage(QWidget):
         self.slideshow_interval_input.setValue(self.config_manager.get("slideshow_interval", 30))
         self.disable_telemetry_check.setChecked(self.config_manager.get("disable_telemetry", False))
         self.update_telemetry_label_state(self.disable_telemetry_check.isChecked())
-        
+
         resolution = self.config_manager.get("resolution", {})
         self.width_input.setText(resolution.get("width", ""))
         self.height_input.setText(resolution.get("height", ""))
@@ -293,7 +293,7 @@ class SettingsPage(QWidget):
             "width": self.width_input.text().strip(),
             "height": self.height_input.text().strip()
         })
-        
+
         self.config_manager.save()
         self.settings_saved.emit()
         QMessageBox.information(self, "Settings Saved", "Your settings have been saved. Some changes may require a restart to take effect.")

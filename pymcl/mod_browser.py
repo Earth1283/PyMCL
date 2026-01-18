@@ -101,13 +101,13 @@ class ModBrowserPage(QWidget):
         query = self.search_input.text().strip()
         if not query:
             return
-        
+
         # If a thread is already running, we don't want to spam/lag by launching another one immediately
-        # if we were strict. But the best UX is to cancel the old one (not possible easily) 
+        # if we were strict. But the best UX is to cancel the old one (not possible easily)
         # or just launch this one and ignore the old result.
         # Since 'requests' is blocking, the old thread will just finish eventually.
         # To prevent "lag", we just ensure we are on a thread.
-        
+
         self.search_button.setText("Searching...")
         self.search_button.setEnabled(False)
 
@@ -117,25 +117,25 @@ class ModBrowserPage(QWidget):
 
         thread = QThread()
         worker = ModSearchWorker(
-            self.modrinth_client, 
-            query, 
-            game_versions, 
-            self.loader, 
+            self.modrinth_client,
+            query,
+            game_versions,
+            self.loader,
             limit,
             self.current_search_id
         )
         worker.moveToThread(thread)
-        
+
         # Keep worker alive
         thread.worker = worker
-        
+
         thread.started.connect(worker.run)
         worker.finished.connect(self.on_search_finished)
         worker.finished.connect(thread.quit)
         worker.finished.connect(worker.deleteLater)
         thread.finished.connect(thread.deleteLater)
         thread.finished.connect(lambda: self.threads.remove(thread) if thread in self.threads else None)
-        
+
         self.threads.append(thread)
         thread.start()
 
@@ -143,7 +143,7 @@ class ModBrowserPage(QWidget):
     def on_search_finished(self, results, search_id):
         if search_id != self.current_search_id:
             return
-        
+
         self.search_results = results
         self.populate_results()
         self.search_button.setText("Search")

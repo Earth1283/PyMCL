@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
         self.image_files = []
         self.current_image_index = 0
-        
+
         # New console window
         self.console_window = ConsoleWindow()
 
@@ -79,10 +79,10 @@ class MainWindow(QMainWindow):
         self.microsoft_auth.login_failed.connect(self.update_status)
 
         self.init_ui()
-        
+
         # Initialize Toast Manager
         self.toast_manager = ToastManager(self)
-        
+
         self.load_settings()
 
         self.apply_styles()
@@ -113,23 +113,23 @@ class MainWindow(QMainWindow):
         # Container for everything using Stacked Layout for background
         main_container = QWidget()
         self.setCentralWidget(main_container)
-        
+
         self.stack_layout = QStackedLayout(main_container)
         self.stack_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
-        
+
         # Layer 1: Background Widget
         self.background_widget = BackgroundWidget(self)
         self.stack_layout.addWidget(self.background_widget)
-        
+
         # Layer 2: UI Content
         central_widget = QWidget()
         central_widget.setObjectName("main_central_widget")
         self.stack_layout.addWidget(central_widget)
-        
+
         # Ensure UI is on top
         central_widget.raise_()
         self.stack_layout.setCurrentWidget(central_widget)
-        
+
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
@@ -141,13 +141,13 @@ class MainWindow(QMainWindow):
         left_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         left_scroll.setFrameShape(QFrame.Shape.NoFrame)
         left_scroll.setStyleSheet("background: transparent;") # Transparent background
-        
+
         # Left navigation container
         left_widget = QWidget()
         left_widget.setObjectName("left_title_container")
         # Ensure the widget itself has transparent bg if styled otherwise in stylesheet
-        left_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
-        
+        left_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
         left_layout = QVBoxLayout(left_widget)
         left_layout.setSpacing(5)
         left_layout.setContentsMargins(10, 10, 10, 10)
@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.nav_console_button)
 
         left_layout.addStretch(1)
-        
+
         left_scroll.setWidget(left_widget)
         main_layout.addWidget(left_scroll, 2)
 
@@ -250,7 +250,7 @@ class MainWindow(QMainWindow):
         self.launch_page.microsoft_login_button.clicked.connect(self.start_microsoft_login)
         self.launch_page.launch_button.clicked.connect(self.start_launch)
         self.launch_page.mod_manager_button.clicked.connect(self.open_mod_manager)
-        
+
         # Connect version change to mods page
         self.launch_page.version_combo.currentTextChanged.connect(self.mods_page.set_version)
 
@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
         if self.stacked_widget.widget(index) == self.mod_browser_page:
             version = self.launch_page.version_combo.currentText()
             mod_loader = self.launch_page.mod_loader_combo.currentText()
-            
+
             # Simple mapping and safety check
             loader_param = None
             if mod_loader and mod_loader == "Fabric":
@@ -292,7 +292,7 @@ class MainWindow(QMainWindow):
                 loader_param = "neoforge"
             elif mod_loader and mod_loader == "Quilt":
                 loader_param = "quilt"
-                
+
             # Only apply if we have a valid version
             if version and version != "Loading versions...":
                 self.mod_browser_page.set_launch_filters(version, loader_param)
@@ -338,7 +338,7 @@ class MainWindow(QMainWindow):
 
         anim_group.finished.connect(lambda: self.on_animation_finished(new_index, old_widget))
         return anim_group
-        
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # Reposition toasts
@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
             return
 
         path = self.image_files[self.current_image_index]
-        
+
         if not os.path.exists(path):
             print(f"Media file not found: {path}")
             # Try next one
@@ -491,12 +491,12 @@ class MainWindow(QMainWindow):
         if cached_versions:
             self.launch_page.version_combo.clear()
             self.launch_page.version_combo.addItems(cached_versions)
-            
+
             if self.last_version and self.last_version in cached_versions:
                 index = self.launch_page.version_combo.findText(self.last_version)
                 if index != -1:
                     self.launch_page.version_combo.setCurrentIndex(index)
-            
+
             self.launch_page.version_combo.setPlaceholderText("Select a version")
             self.launch_page.status_label.setText("Ready (versions fetched from cache)")
             self.launch_page.version_combo.setEnabled(True)
@@ -645,11 +645,11 @@ class MainWindow(QMainWindow):
         self.launch_page.launch_button.setProperty("class", "destructive")
         self.launch_page.launch_button.style().unpolish(self.launch_page.launch_button)
         self.launch_page.launch_button.style().polish(self.launch_page.launch_button)
-        
+
         self.launch_page.status_label.setText("Starting worker thread...")
         self.launch_page.progress_bar.setRange(0, 100)
         self.launch_page.progress_bar.setValue(0)
-        
+
         # Clear console and show it
         self.console_window.clear_logs()
         self.console_window.show()

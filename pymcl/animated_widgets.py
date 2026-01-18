@@ -6,11 +6,11 @@ class AnimatedButton(QPushButton):
     def __init__(self, text="", parent=None, is_secondary=False, is_destructive=False):
         super().__init__(text, parent)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        
+
         self.default_color = QColor("#4a9eff")
         self.hover_color = QColor("#5badff")
         self.pressed_color = QColor("#3a8eef")
-        
+
         if is_secondary:
             self.default_color = QColor("#3c3c3c")
             self.hover_color = QColor("#4a4a4a")
@@ -19,17 +19,17 @@ class AnimatedButton(QPushButton):
             self.default_color = QColor(200, 50, 50)
             self.hover_color = QColor(220, 70, 70)
             self.pressed_color = QColor(180, 40, 40)
-            
+
         self._bg_color = self.default_color
-        
-        # Stylesheet base - we handle background color via animation, 
+
+        # Stylesheet base - we handle background color via animation,
         # so remove background-color from stylesheet if we want pure py animation,
         # OR we just animate a property that updates stylesheet.
         # But QPropertyAnimation on "styleSheet" is inefficient.
         # Better: use QObject property and paint event override OR simple qss transition?
         # PyQt doesn't support CSS transitions.
         # We will use a custom property for background color.
-        
+
         self.setStyleSheet(f"""
             QPushButton {{
                 color: white;
@@ -40,7 +40,7 @@ class AnimatedButton(QPushButton):
                 border: none;
             }}
         """)
-        
+
     def _get_bg_color(self):
         return self._bg_color
 
@@ -97,29 +97,29 @@ class AnimatedInput(QLineEdit):
         self.default_border = QColor("#3a3a3a")
         self.focus_border = QColor("#4a9eff")
         self.error_border = QColor("#f44336")
-        
+
         # Initial style updates happen via qss usually, but we want to animate border.
         # Animatng border in QSS is hard via property.
-        # We'll just stick to QSS with simple state changes for now, 
+        # We'll just stick to QSS with simple state changes for now,
         # OR animate a "borderColor" property.
-        
+
     def shake(self):
         # Simple shake animation
         key_pos = self.pos()
         x = key_pos.x()
         y = key_pos.y()
-        
+
         self.anim = QPropertyAnimation(self, b"pos")
         self.anim.setDuration(50)
         self.anim.setLoopCount(5)
-        
+
         # Shake sequence: left, right, left, right...
         # Note: 'pos' animation on a widget in a layout might be fought by layout.
         # Better to simple set style to error and flash it.
         self.setProperty("error", True)
         self.style().unpolish(self)
         self.style().polish(self)
-        
+
         QTimer.singleShot(500, self.clear_error)
 
     def clear_error(self):

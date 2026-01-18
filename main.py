@@ -13,7 +13,7 @@ def start_splash():
 
 if __name__ == "__main__":
     splash_proc = start_splash()
-    
+
     # hack to stop the python interpterter of compiling imports
     if True == True:
         try:

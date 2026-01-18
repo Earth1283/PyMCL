@@ -13,7 +13,7 @@ class ActionHandler:
         self.launch_action = QAction("Launch Game", self.main_window)
         self.launch_action.setShortcut(QKeySequence("Ctrl+L"))
         self.launch_action.triggered.connect(self.main_window.launch_page.launch_button.click)
-        
+
         self.open_data_folder_action = QAction("Open Data Folder", self.main_window)
         self.open_data_folder_action.triggered.connect(self.main_window.settings_page.open_data_directory)
 
@@ -114,7 +114,7 @@ class ActionHandler:
         # Tools Menu
         tools_menu = menu_bar.addMenu("&Tools")
         tools_menu.addAction(self.clear_cache_action)
-        
+
         # Help Menu
         help_menu = menu_bar.addMenu("&Help")
         help_menu.addAction(self.about_action)

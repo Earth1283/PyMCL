@@ -17,7 +17,7 @@ class ServersPage(QWidget):
         super().__init__(parent)
         self.config_manager = ConfigManager()
         self.server_list = [] # List of IPs
-        
+
         self.init_ui()
         self.load_servers()
 
@@ -30,43 +30,43 @@ class ServersPage(QWidget):
         add_container = QWidget()
         add_layout = QHBoxLayout(add_container)
         add_layout.setContentsMargins(20, 20, 20, 0)
-        
+
         self.ip_input = QLineEdit()
         self.ip_input.setPlaceholderText("Enter server address (e.g. hypixel.net)")
         self.ip_input.setMinimumHeight(45)
         self.ip_input.returnPressed.connect(self.add_server)
         add_layout.addWidget(self.ip_input)
-        
+
         self.add_button = QPushButton("Add Server")
         self.add_button.setObjectName("secondary_button")
         self.add_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.add_button.setMinimumHeight(45)
         self.add_button.clicked.connect(self.add_server)
         add_layout.addWidget(self.add_button)
-        
+
         layout.addWidget(add_container)
 
         # -- Server List Area --
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setObjectName("content_scroll_area")
-        
+
         self.list_container = QWidget()
         self.list_layout = QVBoxLayout(self.list_container)
         self.list_layout.setContentsMargins(20, 20, 20, 20)
         self.list_layout.setSpacing(15)
         self.list_layout.addStretch(1) # Push items to top
-        
+
         scroll_area.setWidget(self.list_container)
         layout.addWidget(scroll_area)
 
     def load_servers(self):
         # Clear existing
         self.clear_list_ui()
-        
+
         # Load from config
         self.server_list = self.config_manager.get("saved_servers", [])
-        
+
         if not self.server_list:
             # Default empty state or welcome server
             self.add_server_card("hypixel.net") # Example default
@@ -94,11 +94,11 @@ class ServersPage(QWidget):
         ip = self.ip_input.text().strip()
         if not ip:
             return
-        
+
         if ip in self.server_list:
             QMessageBox.warning(self, "Duplicate", "This server is already in your list.")
             return
-            
+
         self.server_list.append(ip)
         self.save_servers()
         self.add_server_card(ip)
@@ -115,7 +115,7 @@ class ServersPage(QWidget):
         if ip in self.server_list:
             self.server_list.remove(ip)
             self.save_servers()
-            
+
             # Find and remove widget
             for i in range(self.list_layout.count()):
                 item = self.list_layout.itemAt(i)
