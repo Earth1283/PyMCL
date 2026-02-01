@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymcl"
+version = "0.1.0"
+description = "A Python Minecraft Launcher"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Earth1283", email = "your.email@example.com"}
+]
+dependencies = [
+    "requests",
+    "minecraft_launcher_lib",
+    "PyQt6",
+    "rich",
+    "beautifulsoup4",
+    "lxml",
+    "Markdown",
+]
+
+[project.urls]
+Homepage = "https://github.com/Earth1283/PyMCL"
+Repository = "https://github.com/Earth1283/PyMCL"
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = []
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+python_files = ["test_*.py"]
