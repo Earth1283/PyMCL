@@ -7,6 +7,7 @@ For quick reference's sake, download the latest release [here](https://www.githu
 ## 🏅 Badges
 Biggest [miracle](https://github.com/Earth1283/PyMCL/releases) in the world: [![Nuitka Build](https://github.com/Earth1283/PyMCL/actions/workflows/nuitka.yml/badge.svg)](https://github.com/Earth1283/PyMCL/actions/workflows/nuitka.yml)
 
+[![Tests](https://github.com/Earth1283/PyMCL/actions/workflows/tests.yml/badge.svg)](https://github.com/Earth1283/PyMCL/actions/workflows/tests.yml)
 
 ![Bugs](https://img.shields.io/badge/bugs-included-red?style=for-the-badge)
 
