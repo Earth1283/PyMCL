@@ -26,8 +26,8 @@ class LaunchPage(QWidget):
 
         container = QWidget()
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(10)
+        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(12)
 
         self.auth_method_label = QLabel("AUTHENTICATION")
         self.auth_method_label.setObjectName("section_label")
@@ -41,7 +41,7 @@ class LaunchPage(QWidget):
         self.auth_method_combo.setToolTip("Choose 'Microsoft' for online play or 'Offline' for local play.")
         layout.addWidget(self.auth_method_combo)
 
-        layout.addSpacing(15)
+        layout.addSpacing(25)
 
         self.username_label = QLabel("USERNAME")
         self.username_label.setObjectName("section_label")
@@ -61,7 +61,7 @@ class LaunchPage(QWidget):
         self.microsoft_login_button.setToolTip("Sign in with your Microsoft account to play online.")
         layout.addWidget(self.microsoft_login_button)
 
-        layout.addSpacing(15)
+        layout.addSpacing(25)
 
         version_label = QLabel("MINECRAFT VERSION")
         version_label.setObjectName("section_label")
@@ -75,7 +75,7 @@ class LaunchPage(QWidget):
         self.version_combo.setToolTip("Select the Minecraft version to launch.")
         layout.addWidget(self.version_combo)
 
-        layout.addSpacing(15)
+        layout.addSpacing(25)
 
         mod_layout = QHBoxLayout()
         mod_layout.setSpacing(15)
@@ -99,7 +99,7 @@ class LaunchPage(QWidget):
 
         layout.addLayout(mod_layout)
 
-        layout.addSpacing(15)
+        layout.addSpacing(30)
 
         self.launch_button = AnimatedButton("🚀 LAUNCH GAME")
         self.launch_button.setMinimumHeight(55)

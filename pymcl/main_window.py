@@ -141,6 +141,7 @@ class MainWindow(QMainWindow):
         left_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         left_scroll.setFrameShape(QFrame.Shape.NoFrame)
         left_scroll.setStyleSheet("background: transparent;") # Transparent background
+        left_scroll.setMinimumWidth(220)
 
         # Left navigation container
         left_widget = QWidget()
@@ -156,7 +157,7 @@ class MainWindow(QMainWindow):
         title_frame.setObjectName("title_frame")
         title_frame_layout = QVBoxLayout(title_frame)
         title_frame_layout.setSpacing(0)
-        title_frame_layout.setContentsMargins(20, 20, 20, 20)
+        title_frame_layout.setContentsMargins(15, 20, 15, 30)
 
         title_label = QLabel(APP_NAME)
         title_label.setObjectName("title_label")
@@ -393,15 +394,15 @@ class MainWindow(QMainWindow):
 
     def add_shadow_effects(self):
         shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(30)
-        shadow.setColor(QColor(0, 0, 0, 100))
-        shadow.setOffset(0, 5)
+        shadow.setBlurRadius(40)
+        shadow.setColor(QColor(0, 0, 0, 150))
+        shadow.setOffset(0, 8)
         self.findChild(QFrame, "central_widget_frame").setGraphicsEffect(shadow)
 
         title_shadow = QGraphicsDropShadowEffect()
-        title_shadow.setBlurRadius(20)
-        title_shadow.setColor(QColor(0, 0, 0, 80))
-        title_shadow.setOffset(0, 3)
+        title_shadow.setBlurRadius(25)
+        title_shadow.setColor(QColor(0, 0, 0, 100))
+        title_shadow.setOffset(0, 4)
         self.findChild(QFrame, "title_frame").setGraphicsEffect(title_shadow)
 
     def init_background_images(self):
