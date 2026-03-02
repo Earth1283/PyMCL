@@ -51,50 +51,74 @@ class ModsPage(QWidget):
         layout.setSpacing(15)
         layout.setContentsMargins(20, 20, 20, 20)
 
-        # Update check button
-        self.check_updates_button = QPushButton("Check for Mod Updates")
-        self.check_updates_button.setObjectName("secondary_button")
-        self.check_updates_button.clicked.connect(self.check_updates)
-        layout.addWidget(self.check_updates_button)
-
-        drop_label = QLabel("Drag & Drop .jar files here to install them")
-        drop_label.setObjectName("section_label")
-        drop_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(drop_label)
-
-        self.mod_list_widget = ModListWidget()
-        self.mod_list_widget.set_mods_dir(self.get_mods_directory())
-        self.mod_list_widget.mods_changed.connect(self.populate_mods_list)
-        layout.addWidget(self.mod_list_widget, 1)
+        # Top Action Card
+        action_card = QWidget()
+        action_card.setObjectName("card_container")
+        action_layout = QVBoxLayout(action_card)
+        action_layout.setContentsMargins(24, 24, 24, 24)
+        action_layout.setSpacing(16)
 
         download_label = QLabel("DOWNLOAD MOD FROM URL")
         download_label.setObjectName("section_label")
-        layout.addWidget(download_label)
+        action_layout.addWidget(download_label)
 
         download_layout = QHBoxLayout()
         self.url_input = QLineEdit()
         self.url_input.setPlaceholderText("Paste mod .jar URL here...")
+        self.url_input.setMinimumHeight(45)
         download_layout.addWidget(self.url_input)
 
         self.download_button = QPushButton("Download")
         self.download_button.setObjectName("secondary_button")
+        self.download_button.setMinimumHeight(45)
         self.download_button.clicked.connect(self.start_mod_download)
         download_layout.addWidget(self.download_button)
-        layout.addLayout(download_layout)
+        action_layout.addLayout(download_layout)
 
         self.download_status_label = QLabel("")
         self.download_status_label.setObjectName("status_label")
-        layout.addWidget(self.download_status_label)
+        action_layout.addWidget(self.download_status_label)
 
+        self.check_updates_button = QPushButton("Check for Mod Updates")
+        self.check_updates_button.setObjectName("secondary_button")
+        self.check_updates_button.setMinimumHeight(45)
+        self.check_updates_button.clicked.connect(self.check_updates)
+        action_layout.addWidget(self.check_updates_button)
+
+        layout.addWidget(action_card)
+
+        # Mod List Card
+        list_card = QWidget()
+        list_card.setObjectName("card_container")
+        list_layout = QVBoxLayout(list_card)
+        list_layout.setContentsMargins(24, 24, 24, 24)
+        list_layout.setSpacing(16)
+
+        drop_label = QLabel("Drag & Drop .jar files here to install them")
+        drop_label.setObjectName("section_label")
+        drop_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        list_layout.addWidget(drop_label)
+
+        self.mod_list_widget = ModListWidget()
+        self.mod_list_widget.setStyleSheet("border: none; background: transparent;")
+        self.mod_list_widget.set_mods_dir(self.get_mods_directory())
+        self.mod_list_widget.mods_changed.connect(self.populate_mods_list)
+        list_layout.addWidget(self.mod_list_widget, 1)
+
+        layout.addWidget(list_card, 1)
+
+        # Footer Actions
         button_layout = QHBoxLayout()
 
         open_folder_button = QPushButton("Mods Folder")
         open_folder_button.setObjectName("secondary_button")
+        open_folder_button.setMinimumHeight(45)
         open_folder_button.clicked.connect(self.open_mods_folder)
         button_layout.addWidget(open_folder_button)
 
-        delete_button = QPushButton("Delete")
+        delete_button = QPushButton("Delete Selected")
         delete_button.setObjectName("danger_button")
+        delete_button.setMinimumHeight(45)
         delete_button.clicked.connect(self.delete_selected_mod)
         button_layout.addWidget(delete_button)
 
@@ -102,11 +126,13 @@ class ModsPage(QWidget):
 
         clear_cache_button = QPushButton("Clear Icon Cache")
         clear_cache_button.setObjectName("secondary_button")
+        clear_cache_button.setMinimumHeight(45)
         clear_cache_button.clicked.connect(self.clear_cache)
         button_layout.addWidget(clear_cache_button)
 
-        refresh_button = QPushButton("Refresh")
+        refresh_button = QPushButton("Refresh List")
         refresh_button.setObjectName("secondary_button")
+        refresh_button.setMinimumHeight(45)
         refresh_button.clicked.connect(self.populate_mods_list)
         button_layout.addWidget(refresh_button)
 

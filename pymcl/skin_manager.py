@@ -201,8 +201,9 @@ class SkinManagerPage(QWidget):
 
         # Preview Area
         preview_container = QWidget()
-        preview_container.setStyleSheet("background-color: rgba(0,0,0,0.3); border-radius: 10px;")
+        preview_container.setObjectName("card_container")
         preview_vbox = QVBoxLayout(preview_container)
+        preview_vbox.setContentsMargins(24, 24, 24, 24)
 
         self.preview = SkinPreviewWidget()
         preview_vbox.addWidget(self.preview, 0, Qt.AlignmentFlag.AlignCenter)
@@ -210,36 +211,39 @@ class SkinManagerPage(QWidget):
         content_layout.addWidget(preview_container)
 
         # Controls Area
-        controls_layout = QVBoxLayout()
-        controls_layout.setSpacing(15)
+        controls_card = QWidget()
+        controls_card.setObjectName("card_container")
+        controls_layout = QVBoxLayout(controls_card)
+        controls_layout.setContentsMargins(24, 24, 24, 24)
+        controls_layout.setSpacing(16)
 
-        lbl = QLabel("Upload New Skin")
-        lbl.setStyleSheet("font-weight: bold; font-size: 16px;")
+        lbl = QLabel("Manage Skin")
+        lbl.setObjectName("section_label")
         controls_layout.addWidget(lbl)
 
         self.variant_btn = QPushButton("Model: Classic (Steve)")
         self.variant_btn.setCheckable(True)
         self.variant_btn.clicked.connect(self.toggle_variant)
-        self.variant_btn.setMinimumHeight(45)
+        self.variant_btn.setMinimumHeight(55)
         self.variant_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         controls_layout.addWidget(self.variant_btn)
 
         upload_btn = QPushButton("Select & Upload Skin")
         upload_btn.setObjectName("secondary_button")
-        upload_btn.setMinimumHeight(45)
+        upload_btn.setMinimumHeight(55)
         upload_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         upload_btn.clicked.connect(self.upload_skin)
         controls_layout.addWidget(upload_btn)
 
         refresh_btn = QPushButton("Refresh Current Skin")
-        refresh_btn.setMinimumHeight(45)
+        refresh_btn.setMinimumHeight(55)
         refresh_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         refresh_btn.clicked.connect(self.refresh_skin)
         controls_layout.addWidget(refresh_btn)
 
         controls_layout.addStretch(1)
 
-        content_layout.addLayout(controls_layout)
+        content_layout.addWidget(controls_card)
         layout.addLayout(content_layout)
 
     def toggle_variant(self):

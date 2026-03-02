@@ -28,8 +28,10 @@ class ServersPage(QWidget):
 
         # -- Add Server Section --
         add_container = QWidget()
+        add_container.setObjectName("card_container")
         add_layout = QHBoxLayout(add_container)
-        add_layout.setContentsMargins(20, 20, 20, 0)
+        add_layout.setContentsMargins(24, 24, 24, 24)
+        add_layout.setSpacing(16)
 
         self.ip_input = QLineEdit()
         self.ip_input.setPlaceholderText("Enter server address (e.g. hypixel.net)")

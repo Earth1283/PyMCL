@@ -46,16 +46,19 @@ class ModBrowserPage(QWidget):
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(20)
 
         # Search bar
         search_container = QWidget()
-        search_container.setObjectName("floating_search_container")
+        search_container.setObjectName("card_container")
         search_layout = QVBoxLayout(search_container)
-        search_layout.setContentsMargins(20, 20, 20, 20)
+        search_layout.setContentsMargins(24, 24, 24, 24)
+        search_layout.setSpacing(16)
 
         search_bar_layout = QHBoxLayout()
+        search_bar_layout.setSpacing(12)
+        
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search for mods on Modrinth...")
         self.search_input.setMinimumHeight(45)

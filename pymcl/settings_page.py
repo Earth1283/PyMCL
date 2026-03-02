@@ -37,17 +37,23 @@ class SettingsPage(QWidget):
         general_tab = QWidget()
         general_layout = QVBoxLayout(general_tab)
         general_layout.setContentsMargins(20, 20, 20, 20)
-        general_layout.setSpacing(15)
+        general_layout.setSpacing(20)
 
-        # Mods directory setting
+        # Directories Card
+        dir_card = QWidget()
+        dir_card.setObjectName("card_container")
+        dir_layout = QVBoxLayout(dir_card)
+        dir_layout.setContentsMargins(24, 24, 24, 24)
+        dir_layout.setSpacing(16)
+
         mods_dir_label = QLabel("MODS DIRECTORY")
         mods_dir_label.setObjectName("section_label")
-        general_layout.addWidget(mods_dir_label)
+        dir_layout.addWidget(mods_dir_label)
 
         mods_dir_layout = QHBoxLayout()
         self.mods_dir_input = QLineEdit()
         self.mods_dir_input.setPlaceholderText("Enter mods directory path")
-        self.mods_dir_input.setMinimumHeight(55)
+        self.mods_dir_input.setMinimumHeight(45)
         mods_dir_layout.addWidget(self.mods_dir_input)
 
         mods_dir_browse_button = QPushButton("Browse")
@@ -55,17 +61,16 @@ class SettingsPage(QWidget):
         mods_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         mods_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.mods_dir_input))
         mods_dir_layout.addWidget(mods_dir_browse_button)
-        general_layout.addLayout(mods_dir_layout)
+        dir_layout.addLayout(mods_dir_layout)
 
-        # Images directory setting
         images_dir_label = QLabel("BACKGROUND IMAGES DIRECTORY")
         images_dir_label.setObjectName("section_label")
-        general_layout.addWidget(images_dir_label)
+        dir_layout.addWidget(images_dir_label)
 
         images_dir_layout = QHBoxLayout()
         self.images_dir_input = QLineEdit()
         self.images_dir_input.setPlaceholderText("Enter images directory path")
-        self.images_dir_input.setMinimumHeight(55)
+        self.images_dir_input.setMinimumHeight(45)
         images_dir_layout.addWidget(self.images_dir_input)
 
         images_dir_browse_button = QPushButton("Browse")
@@ -73,9 +78,17 @@ class SettingsPage(QWidget):
         images_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         images_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.images_dir_input))
         images_dir_layout.addWidget(images_dir_browse_button)
-        general_layout.addLayout(images_dir_layout)
+        dir_layout.addLayout(images_dir_layout)
+        
+        general_layout.addWidget(dir_card)
 
-        # Telemetry Setting
+        # System & Telemetry Card
+        sys_card = QWidget()
+        sys_card.setObjectName("card_container")
+        sys_layout = QVBoxLayout(sys_card)
+        sys_layout.setContentsMargins(24, 24, 24, 24)
+        sys_layout.setSpacing(16)
+
         telemetry_layout = QHBoxLayout()
         self.disable_telemetry_check = QCheckBox("Disable Microsoft Telemetry")
         self.disable_telemetry_check.setToolTip("Attempts to disable telemetry by modifying game options and using JVM arguments.")
@@ -87,15 +100,15 @@ class SettingsPage(QWidget):
         telemetry_layout.addWidget(self.telemetry_status_label)
         telemetry_layout.addStretch(1)
 
-        general_layout.addLayout(telemetry_layout)
+        sys_layout.addLayout(telemetry_layout)
 
-        # Open Data Folder Button
         open_data_dir_button = QPushButton("Open Data Folder")
         open_data_dir_button.setObjectName("secondary_button")
         open_data_dir_button.setCursor(Qt.CursorShape.PointingHandCursor)
         open_data_dir_button.clicked.connect(self.open_data_directory)
-        general_layout.addWidget(open_data_dir_button)
+        sys_layout.addWidget(open_data_dir_button)
 
+        general_layout.addWidget(sys_card)
         general_layout.addStretch(1)
         self.tabs.addTab(general_tab, "General")
 
@@ -104,17 +117,23 @@ class SettingsPage(QWidget):
         java_tab = QWidget()
         java_layout = QVBoxLayout(java_tab)
         java_layout.setContentsMargins(20, 20, 20, 20)
-        java_layout.setSpacing(15)
+        java_layout.setSpacing(20)
 
-        # Java executable setting
+        # Java Runtime Card
+        runtime_card = QWidget()
+        runtime_card.setObjectName("card_container")
+        runtime_layout = QVBoxLayout(runtime_card)
+        runtime_layout.setContentsMargins(24, 24, 24, 24)
+        runtime_layout.setSpacing(16)
+
         java_executable_label = QLabel("JAVA EXECUTABLE (OPTIONAL)")
         java_executable_label.setObjectName("section_label")
-        java_layout.addWidget(java_executable_label)
+        runtime_layout.addWidget(java_executable_label)
 
         java_executable_layout = QHBoxLayout()
         self.java_executable_input = QLineEdit()
         self.java_executable_input.setPlaceholderText("Enter Java executable path")
-        self.java_executable_input.setMinimumHeight(55)
+        self.java_executable_input.setMinimumHeight(45)
         java_executable_layout.addWidget(self.java_executable_input)
 
         java_executable_browse_button = QPushButton("Browse")
@@ -122,22 +141,29 @@ class SettingsPage(QWidget):
         java_executable_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         java_executable_browse_button.clicked.connect(lambda: self.browse_file(self.java_executable_input))
         java_executable_layout.addWidget(java_executable_browse_button)
-        java_layout.addLayout(java_executable_layout)
+        runtime_layout.addLayout(java_executable_layout)
 
-        # JVM arguments setting
         jvm_args_label = QLabel("JVM ARGUMENTS (ADVANCED)")
         jvm_args_label.setObjectName("section_label")
-        java_layout.addWidget(jvm_args_label)
+        runtime_layout.addWidget(jvm_args_label)
 
         self.jvm_args_input = QLineEdit()
         self.jvm_args_input.setPlaceholderText("-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC")
-        self.jvm_args_input.setMinimumHeight(55)
-        java_layout.addWidget(self.jvm_args_input)
+        self.jvm_args_input.setMinimumHeight(45)
+        runtime_layout.addWidget(self.jvm_args_input)
 
-        # Memory allocation setting
+        java_layout.addWidget(runtime_card)
+
+        # Memory Card
+        memory_card = QWidget()
+        memory_card.setObjectName("card_container")
+        memory_layout_inner = QVBoxLayout(memory_card)
+        memory_layout_inner.setContentsMargins(24, 24, 24, 24)
+        memory_layout_inner.setSpacing(16)
+
         memory_label = QLabel("MEMORY ALLOCATION (RAM)")
         memory_label.setObjectName("section_label")
-        java_layout.addWidget(memory_label)
+        memory_layout_inner.addWidget(memory_label)
 
         memory_layout = QHBoxLayout()
         self.memory_slider = QSlider(Qt.Orientation.Horizontal)
@@ -152,7 +178,9 @@ class SettingsPage(QWidget):
         self.memory_value_label.setObjectName("memory_label")
         self.memory_slider.valueChanged.connect(self.update_memory_label)
         memory_layout.addWidget(self.memory_value_label)
-        java_layout.addLayout(memory_layout)
+        memory_layout_inner.addLayout(memory_layout)
+
+        java_layout.addWidget(memory_card)
 
         java_layout.addStretch(1)
         self.tabs.addTab(java_tab, "Java & Performance")
@@ -162,33 +190,47 @@ class SettingsPage(QWidget):
         display_tab = QWidget()
         display_layout = QVBoxLayout(display_tab)
         display_layout.setContentsMargins(20, 20, 20, 20)
-        display_layout.setSpacing(15)
+        display_layout.setSpacing(20)
 
-        # Resolution setting
+        # Resolution Card
+        res_card = QWidget()
+        res_card.setObjectName("card_container")
+        res_layout = QVBoxLayout(res_card)
+        res_layout.setContentsMargins(24, 24, 24, 24)
+        res_layout.setSpacing(16)
+
         resolution_label = QLabel("GAME RESOLUTION")
         resolution_label.setObjectName("section_label")
-        display_layout.addWidget(resolution_label)
+        res_layout.addWidget(resolution_label)
 
         resolution_layout = QHBoxLayout()
         self.width_input = QLineEdit()
         self.width_input.setPlaceholderText("Width")
-        self.width_input.setMinimumHeight(55)
+        self.width_input.setMinimumHeight(45)
         resolution_layout.addWidget(self.width_input)
 
         self.height_input = QLineEdit()
         self.height_input.setPlaceholderText("Height")
-        self.height_input.setMinimumHeight(55)
+        self.height_input.setMinimumHeight(45)
         resolution_layout.addWidget(self.height_input)
-        display_layout.addLayout(resolution_layout)
+        res_layout.addLayout(resolution_layout)
 
-        # Video Settings
-        video_settings_label = QLabel("VIDEO BACKGROUND SETTINGS")
+        display_layout.addWidget(res_card)
+
+        # Background Card
+        bg_card = QWidget()
+        bg_card.setObjectName("card_container")
+        bg_layout = QVBoxLayout(bg_card)
+        bg_layout.setContentsMargins(24, 24, 24, 24)
+        bg_layout.setSpacing(16)
+
+        video_settings_label = QLabel("BACKGROUND MEDIA")
         video_settings_label.setObjectName("section_label")
-        display_layout.addWidget(video_settings_label)
+        bg_layout.addWidget(video_settings_label)
 
         self.enable_slideshow_check = QCheckBox("Enable Background Slideshow")
         self.enable_slideshow_check.setChecked(True)
-        display_layout.addWidget(self.enable_slideshow_check)
+        bg_layout.addWidget(self.enable_slideshow_check)
 
         slideshow_interval_layout = QHBoxLayout()
         slideshow_interval_label = QLabel("Slideshow Interval (seconds):")
@@ -199,15 +241,17 @@ class SettingsPage(QWidget):
         slideshow_interval_layout.addWidget(slideshow_interval_label)
         slideshow_interval_layout.addWidget(self.slideshow_interval_input)
         slideshow_interval_layout.addStretch(1)
-        display_layout.addLayout(slideshow_interval_layout)
+        bg_layout.addLayout(slideshow_interval_layout)
 
         self.loop_video_check = QCheckBox("Loop Video/GIF")
         self.loop_video_check.setChecked(True)
-        display_layout.addWidget(self.loop_video_check)
+        bg_layout.addWidget(self.loop_video_check)
 
         self.mute_video_check = QCheckBox("Mute Video Audio")
         self.mute_video_check.setChecked(True)
-        display_layout.addWidget(self.mute_video_check)
+        bg_layout.addWidget(self.mute_video_check)
+
+        display_layout.addWidget(bg_card)
 
         display_layout.addStretch(1)
         self.tabs.addTab(display_tab, "Display & Media")

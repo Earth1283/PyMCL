@@ -42,9 +42,13 @@ class ServerCard(QFrame):
         self.setObjectName("card")
         self.setStyleSheet("""
             QFrame#card {
-                background-color: rgba(0, 0, 0, 0.4);
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                background-color: rgba(255, 255, 255, 0.03);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            QFrame#card:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.15);
             }
         """)
 

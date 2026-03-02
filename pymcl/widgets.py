@@ -132,14 +132,14 @@ class ModListItem(QWidget):
         self.setup_animations()
 
     def init_ui(self):
-        self.setObjectName("mod_card")
+        self.setObjectName("card_container")
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(10)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
 
         self.icon_label = QLabel()
         self.icon_label.setFixedSize(QSize(128, 128))
-        self.icon_label.setStyleSheet("background-color: #333;") # Placeholder
+        self.icon_label.setStyleSheet("background-color: rgba(255,255,255,0.05); border-radius: 8px;") # Placeholder
         layout.addWidget(self.icon_label, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.title_label = QLabel(self.mod_data.get("title", "Unknown Mod"))

@@ -14,6 +14,11 @@ QFrame#central_widget_frame {
     background-color: rgba(15, 17, 21, 0.65);
     padding: 15px;
 }
+QWidget#card_container {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+}
 QLabel {
     color: #e0e0e0;
     font-size: 13px;
@@ -296,17 +301,18 @@ QScrollArea#content_scroll_area {
 
 QScrollBar:vertical {
     border: none;
-    background: transparent;
-    width: 10px;
-    margin: 0px 0px 0px 0px;
+    background: rgba(255, 255, 255, 0.02);
+    width: 8px;
+    margin: 0px;
+    border-radius: 4px;
 }
 QScrollBar::handle:vertical {
-    background: #444;
+    background: rgba(255, 255, 255, 0.2);
     min-height: 20px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 QScrollBar::handle:vertical:hover {
-    background: #555;
+    background: rgba(255, 255, 255, 0.3);
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     border: none;
@@ -318,17 +324,18 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 
 QScrollBar:horizontal {
     border: none;
-    background: transparent;
-    height: 10px;
-    margin: 0px 0px 0px 0px;
+    background: rgba(255, 255, 255, 0.02);
+    height: 8px;
+    margin: 0px;
+    border-radius: 4px;
 }
 QScrollBar::handle:horizontal {
-    background: #444;
+    background: rgba(255, 255, 255, 0.2);
     min-width: 20px;
-    border-radius: 5px;
+    border-radius: 4px;
 }
 QScrollBar::handle:horizontal:hover {
-    background: #555;
+    background: rgba(255, 255, 255, 0.3);
 }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     border: none;
@@ -409,34 +416,34 @@ QPushButton#download_badge:hover {
 
 /* Tab Widget */
 QTabWidget::pane {
-    border: 1px solid #3a3a3a;
-    border-radius: 8px;
-    background-color: #252525;
-    top: -1px;
+    border: none;
+    background-color: transparent;
+    top: 10px;
+}
+
+QTabWidget::tab-bar {
+    alignment: center;
 }
 
 QTabBar::tab {
-    background: #1e1e1e;
-    color: #888;
-    padding: 10px 20px;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border: 1px solid #3a3a3a;
-    border-bottom: none;
-    margin-right: 2px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #9ca3af;
+    padding: 10px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin: 0 4px;
     font-weight: 600;
 }
 
 QTabBar::tab:selected {
-    background: #252525;
-    color: #4a9eff;
-    border-bottom: 1px solid #252525; /* Blend with pane */
+    background: rgba(59, 130, 246, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-
 QTabBar::tab:hover:!selected {
-    background: #2a2a2a;
-    color: #ccc;
+    background: rgba(255, 255, 255, 0.08);
+    color: #e5e7eb;
 }
 
 /* Toast Notifications */
