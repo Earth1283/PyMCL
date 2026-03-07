@@ -105,17 +105,11 @@ class SkinPreviewWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, False) # Keep pixel look
 
-        if not self.raw_skin:
+        if not self.raw_skin or self.raw_skin.isNull():
             # Draw placeholder text centered
             painter.setPen(Qt.GlobalColor.white)
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "No Skin Loaded")
             return
-
-        # Basic 2D Front View Mapping
-        # Head: 8,8 (8x8)
-        # Body: 20,20 (8x12)
-        # Arms: 44,20 (4x12) - Note: Alex/Slim is 3x12
-        # Legs: 4,20 (4x12)
 
         # Scaling
         s = 16 # Draw scale
@@ -124,8 +118,14 @@ class SkinPreviewWidget(QWidget):
         cx = self.width() // 2
         cy = 50
 
+        sw = self.raw_skin.width()
+        sh = self.raw_skin.height()
+
         # Helper to draw rect from skin to screen
         def draw_part(sx, sy, w, h, dx, dy):
+            # Safety check for dimensions
+            if sx + w > sw or sy + h > sh:
+                return
             part = self.raw_skin.copy(sx, sy, w, h).scaled(w*s, h*s, Qt.AspectRatioMode.IgnoreAspectRatio)
             painter.drawPixmap(dx, dy, part)
 
@@ -261,8 +261,14 @@ class SkinManagerPage(QWidget):
             return
 
         self.status_label.setText("Fetching skin...")
+        if self.fetcher and self.fetcher.isRunning():
+            self.fetcher.terminate()
+            self.fetcher.wait()
+
         self.fetcher = SkinFetcher(uuid)
         self.fetcher.finished.connect(self.on_skin_fetched)
+        self.fetcher.finished.connect(self.fetcher.quit)
+        self.fetcher.finished.connect(self.fetcher.deleteLater)
         self.fetcher.start()
 
     @pyqtSlot(QPixmap, bool)
@@ -286,8 +292,14 @@ class SkinManagerPage(QWidget):
         token = self.minecraft_info.get("access_token")
 
         self.status_label.setText("Uploading skin...")
+        if self.uploader and self.uploader.isRunning():
+             self.uploader.terminate()
+             self.uploader.wait()
+
         self.uploader = SkinUploader(token, file_path, variant)
         self.uploader.finished.connect(self.on_upload_finished)
+        self.uploader.finished.connect(self.uploader.quit)
+        self.uploader.finished.connect(self.uploader.deleteLater)
         self.uploader.start()
 
     @pyqtSlot(bool, str)

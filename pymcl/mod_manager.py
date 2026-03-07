@@ -168,9 +168,15 @@ class ModsPage(QWidget):
         self.check_updates_button.setEnabled(True)
         self.check_updates_button.setText("Check for Mod Updates")
 
+        if not updates:
+            self.download_status_label.setText("All mods are up to date.")
+            return
+
         count = 0
         for i in range(self.mod_list_widget.count()):
             item = self.mod_list_widget.item(i)
+            if not item:
+                continue
             mod_path = item.data(Qt.ItemDataRole.UserRole)
             widget = self.mod_list_widget.itemWidget(item)
 
@@ -227,7 +233,15 @@ class ModsPage(QWidget):
 
     @pyqtSlot()
     def populate_mods_list(self):
+        # Clear list widget correctly
+        for i in range(self.mod_list_widget.count()):
+            item = self.mod_list_widget.item(i)
+            if item:
+                widget = self.mod_list_widget.itemWidget(item)
+                if widget:
+                    widget.deleteLater()
         self.mod_list_widget.clear()
+
         try:
             mods_dir = self.get_mods_directory()
             if not os.path.exists(mods_dir):

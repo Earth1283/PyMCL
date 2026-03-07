@@ -231,7 +231,7 @@ QWidget#main_central_widget {
 }
 
 QWidget#left_title_container {
-    background-color: rgba(15, 17, 21, 0.65);
+    background-color: rgba(10, 12, 16, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: 15px;
@@ -250,7 +250,7 @@ QDialog {
 QPushButton#nav_button, QPushButton#nav_button_active {
     background-color: transparent;
     border: 1px solid transparent;
-    color: #9ca3af;
+    color: #e5e7eb;
     font-size: 15px;
     font-weight: 600;
     text-align: left;

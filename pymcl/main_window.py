@@ -147,7 +147,7 @@ class MainWindow(QMainWindow):
         left_widget = QWidget()
         left_widget.setObjectName("left_title_container")
         # Ensure the widget itself has transparent bg if styled otherwise in stylesheet
-        left_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        left_widget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
         left_layout = QVBoxLayout(left_widget)
         left_layout.setSpacing(5)

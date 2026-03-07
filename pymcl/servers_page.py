@@ -87,9 +87,10 @@ class ServersPage(QWidget):
         # Remove all widgets from layout except the stretch
         while self.list_layout.count() > 1:
             item = self.list_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
+            if item:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
 
     @pyqtSlot()
     def add_server(self):
@@ -121,7 +122,10 @@ class ServersPage(QWidget):
             # Find and remove widget
             for i in range(self.list_layout.count()):
                 item = self.list_layout.itemAt(i)
+                if not item:
+                    continue
                 widget = item.widget()
                 if isinstance(widget, ServerCard) and widget.ip == ip:
+                    self.list_layout.takeAt(i)
                     widget.deleteLater()
                     break

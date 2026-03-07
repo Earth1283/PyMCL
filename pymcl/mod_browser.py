@@ -159,9 +159,14 @@ class ModBrowserPage(QWidget):
         self.search_timer.start()
 
     def populate_results(self):
-        # Clear existing results
+        # Clear existing results safely
         for i in reversed(range(self.results_layout.count())):
-            self.results_layout.itemAt(i).widget().setParent(None)
+            item = self.results_layout.itemAt(i)
+            if item:
+                widget = item.widget()
+                if widget:
+                    widget.setParent(None)
+                    widget.deleteLater()
 
         if not self.search_results:
             self.results_layout.addWidget(QLabel("No results found."), 0, 0, 1, 3)
@@ -194,7 +199,10 @@ class ModBrowserPage(QWidget):
             return
 
         for i in range(self.results_layout.count()):
-            widget = self.results_layout.itemAt(i).widget()
+            item = self.results_layout.itemAt(i)
+            if not item:
+                continue
+            widget = item.widget()
             if isinstance(widget, ModListItem) and widget.mod_data.get("project_id") == mod_id:
                 widget.set_icon(icon_path)
                 break

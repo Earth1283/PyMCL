@@ -25,7 +25,11 @@ class ModrinthClient:
         try:
             response = self.session.get(f"{self.BASE_URL}/search", params=params, timeout=15)
             response.raise_for_status()
-            return response.json().get("hits", [])
+            try:
+                data = response.json()
+                return data.get("hits", []) if isinstance(data, dict) else []
+            except (json.JSONDecodeError, ValueError):
+                return []
         except requests.RequestException as e:
             print(f"Error searching Modrinth: {e}")
             return []
@@ -34,7 +38,10 @@ class ModrinthClient:
         try:
             response = self.session.get(f"{self.BASE_URL}/project/{slug}", timeout=15)
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except (json.JSONDecodeError, ValueError):
+                return {}
         except requests.RequestException as e:
             print(f"Error getting project from Modrinth: {e}")
             return {}
@@ -49,7 +56,10 @@ class ModrinthClient:
             )
             response.raise_for_status()
             print("ModrinthClient: Successfully received update response.")
-            return response.json()
+            try:
+                return response.json()
+            except (json.JSONDecodeError, ValueError):
+                return {}
         except requests.RequestException as e:
             print(f"ModrinthClient: Error getting updates: {e}")
             return {}
@@ -64,7 +74,10 @@ class ModrinthClient:
         try:
             response = self.session.get(f"{self.BASE_URL}/project/{mod_id}/version", params=params, timeout=15)
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except (json.JSONDecodeError, ValueError):
+                return []
         except requests.RequestException as e:
             print(f"Error getting versions from Modrinth: {e}")
             return []
