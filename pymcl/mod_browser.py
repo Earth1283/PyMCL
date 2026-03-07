@@ -46,22 +46,22 @@ class ModBrowserPage(QWidget):
 
     def init_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.setSpacing(15)
 
         # Search bar
         search_container = QWidget()
         search_container.setObjectName("card_container")
         search_layout = QVBoxLayout(search_container)
-        search_layout.setContentsMargins(24, 24, 24, 24)
-        search_layout.setSpacing(16)
+        search_layout.setContentsMargins(18, 18, 18, 18)
+        search_layout.setSpacing(12)
 
         search_bar_layout = QHBoxLayout()
-        search_bar_layout.setSpacing(12)
+        search_bar_layout.setSpacing(10)
         
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search for mods on Modrinth...")
-        self.search_input.setMinimumHeight(45)
+        self.search_input.setMinimumHeight(42)
         self.search_input.returnPressed.connect(self.start_search)
         self.search_input.textChanged.connect(self.on_search_text_changed)
         search_bar_layout.addWidget(self.search_input)
@@ -70,13 +70,13 @@ class ModBrowserPage(QWidget):
         self.limit_spinbox.setRange(1, 100)
         self.limit_spinbox.setValue(20)
         self.limit_spinbox.setPrefix("Limit: ")
-        self.limit_spinbox.setMinimumHeight(45)
-        self.limit_spinbox.setFixedWidth(100)
+        self.limit_spinbox.setMinimumHeight(42)
+        self.limit_spinbox.setFixedWidth(90)
         search_bar_layout.addWidget(self.limit_spinbox)
 
         self.search_button = QPushButton("Search")
         self.search_button.setObjectName("secondary_button")
-        self.search_button.setMinimumHeight(45)
+        self.search_button.setMinimumHeight(42)
         self.search_button.clicked.connect(self.start_search)
         search_bar_layout.addWidget(self.search_button)
         search_layout.addLayout(search_bar_layout)
@@ -95,8 +95,8 @@ class ModBrowserPage(QWidget):
 
         results_container = QWidget()
         self.results_layout = QGridLayout(results_container)
-        self.results_layout.setContentsMargins(20, 20, 20, 20)
-        self.results_layout.setSpacing(20)
+        self.results_layout.setContentsMargins(15, 15, 15, 15)
+        self.results_layout.setSpacing(15)
         scroll_area.setWidget(results_container)
 
     @pyqtSlot()

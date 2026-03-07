@@ -36,15 +36,15 @@ class SettingsPage(QWidget):
         # --- General Tab ---
         general_tab = QWidget()
         general_layout = QVBoxLayout(general_tab)
-        general_layout.setContentsMargins(20, 20, 20, 20)
-        general_layout.setSpacing(20)
+        general_layout.setContentsMargins(12, 12, 12, 12)
+        general_layout.setSpacing(12)
 
         # Directories Card
         dir_card = QWidget()
         dir_card.setObjectName("card_container")
         dir_layout = QVBoxLayout(dir_card)
-        dir_layout.setContentsMargins(24, 24, 24, 24)
-        dir_layout.setSpacing(16)
+        dir_layout.setContentsMargins(15, 15, 15, 15)
+        dir_layout.setSpacing(10)
 
         mods_dir_label = QLabel("MODS DIRECTORY")
         mods_dir_label.setObjectName("section_label")
@@ -53,13 +53,14 @@ class SettingsPage(QWidget):
         mods_dir_layout = QHBoxLayout()
         self.mods_dir_input = QLineEdit()
         self.mods_dir_input.setPlaceholderText("Enter mods directory path")
-        self.mods_dir_input.setMinimumHeight(45)
+        self.mods_dir_input.setMinimumHeight(42)
         mods_dir_layout.addWidget(self.mods_dir_input)
 
         mods_dir_browse_button = QPushButton("Browse")
         mods_dir_browse_button.setObjectName("secondary_button")
         mods_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         mods_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.mods_dir_input))
+        mods_dir_browse_button.setMinimumHeight(42)
         mods_dir_layout.addWidget(mods_dir_browse_button)
         dir_layout.addLayout(mods_dir_layout)
 
@@ -70,13 +71,14 @@ class SettingsPage(QWidget):
         images_dir_layout = QHBoxLayout()
         self.images_dir_input = QLineEdit()
         self.images_dir_input.setPlaceholderText("Enter images directory path")
-        self.images_dir_input.setMinimumHeight(45)
+        self.images_dir_input.setMinimumHeight(42)
         images_dir_layout.addWidget(self.images_dir_input)
 
         images_dir_browse_button = QPushButton("Browse")
         images_dir_browse_button.setObjectName("secondary_button")
         images_dir_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         images_dir_browse_button.clicked.connect(lambda: self.browse_directory(self.images_dir_input))
+        images_dir_browse_button.setMinimumHeight(42)
         images_dir_layout.addWidget(images_dir_browse_button)
         dir_layout.addLayout(images_dir_layout)
         
@@ -86,8 +88,8 @@ class SettingsPage(QWidget):
         sys_card = QWidget()
         sys_card.setObjectName("card_container")
         sys_layout = QVBoxLayout(sys_card)
-        sys_layout.setContentsMargins(24, 24, 24, 24)
-        sys_layout.setSpacing(16)
+        sys_layout.setContentsMargins(15, 15, 15, 15)
+        sys_layout.setSpacing(10)
 
         telemetry_layout = QHBoxLayout()
         self.disable_telemetry_check = QCheckBox("Disable Microsoft Telemetry")
@@ -106,6 +108,7 @@ class SettingsPage(QWidget):
         open_data_dir_button.setObjectName("secondary_button")
         open_data_dir_button.setCursor(Qt.CursorShape.PointingHandCursor)
         open_data_dir_button.clicked.connect(self.open_data_directory)
+        open_data_dir_button.setMinimumHeight(42)
         sys_layout.addWidget(open_data_dir_button)
 
         general_layout.addWidget(sys_card)
@@ -116,15 +119,15 @@ class SettingsPage(QWidget):
         # --- Java & Performance Tab ---
         java_tab = QWidget()
         java_layout = QVBoxLayout(java_tab)
-        java_layout.setContentsMargins(20, 20, 20, 20)
-        java_layout.setSpacing(20)
+        java_layout.setContentsMargins(12, 12, 12, 12)
+        java_layout.setSpacing(12)
 
         # Java Runtime Card
         runtime_card = QWidget()
         runtime_card.setObjectName("card_container")
         runtime_layout = QVBoxLayout(runtime_card)
-        runtime_layout.setContentsMargins(24, 24, 24, 24)
-        runtime_layout.setSpacing(16)
+        runtime_layout.setContentsMargins(15, 15, 15, 15)
+        runtime_layout.setSpacing(10)
 
         java_executable_label = QLabel("JAVA EXECUTABLE (OPTIONAL)")
         java_executable_label.setObjectName("section_label")
@@ -133,13 +136,14 @@ class SettingsPage(QWidget):
         java_executable_layout = QHBoxLayout()
         self.java_executable_input = QLineEdit()
         self.java_executable_input.setPlaceholderText("Enter Java executable path")
-        self.java_executable_input.setMinimumHeight(45)
+        self.java_executable_input.setMinimumHeight(42)
         java_executable_layout.addWidget(self.java_executable_input)
 
         java_executable_browse_button = QPushButton("Browse")
         java_executable_browse_button.setObjectName("secondary_button")
         java_executable_browse_button.setCursor(Qt.CursorShape.PointingHandCursor)
         java_executable_browse_button.clicked.connect(lambda: self.browse_file(self.java_executable_input))
+        java_executable_browse_button.setMinimumHeight(42)
         java_executable_layout.addWidget(java_executable_browse_button)
         runtime_layout.addLayout(java_executable_layout)
 
@@ -149,7 +153,7 @@ class SettingsPage(QWidget):
 
         self.jvm_args_input = QLineEdit()
         self.jvm_args_input.setPlaceholderText("-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC")
-        self.jvm_args_input.setMinimumHeight(45)
+        self.jvm_args_input.setMinimumHeight(42)
         runtime_layout.addWidget(self.jvm_args_input)
 
         java_layout.addWidget(runtime_card)
@@ -158,8 +162,8 @@ class SettingsPage(QWidget):
         memory_card = QWidget()
         memory_card.setObjectName("card_container")
         memory_layout_inner = QVBoxLayout(memory_card)
-        memory_layout_inner.setContentsMargins(24, 24, 24, 24)
-        memory_layout_inner.setSpacing(16)
+        memory_layout_inner.setContentsMargins(15, 15, 15, 15)
+        memory_layout_inner.setSpacing(10)
 
         memory_label = QLabel("MEMORY ALLOCATION (RAM)")
         memory_label.setObjectName("section_label")
@@ -189,15 +193,16 @@ class SettingsPage(QWidget):
         # --- Display & Media Tab ---
         display_tab = QWidget()
         display_layout = QVBoxLayout(display_tab)
-        display_layout.setContentsMargins(20, 20, 20, 20)
-        display_layout.setSpacing(20)
+        display_tab_contents_margins = 12
+        display_layout.setContentsMargins(display_tab_contents_margins, display_tab_contents_margins, display_tab_contents_margins, display_tab_contents_margins)
+        display_layout.setSpacing(12)
 
         # Resolution Card
         res_card = QWidget()
         res_card.setObjectName("card_container")
         res_layout = QVBoxLayout(res_card)
-        res_layout.setContentsMargins(24, 24, 24, 24)
-        res_layout.setSpacing(16)
+        res_layout.setContentsMargins(15, 15, 15, 15)
+        res_layout.setSpacing(10)
 
         resolution_label = QLabel("GAME RESOLUTION")
         resolution_label.setObjectName("section_label")
@@ -206,12 +211,12 @@ class SettingsPage(QWidget):
         resolution_layout = QHBoxLayout()
         self.width_input = QLineEdit()
         self.width_input.setPlaceholderText("Width")
-        self.width_input.setMinimumHeight(45)
+        self.width_input.setMinimumHeight(42)
         resolution_layout.addWidget(self.width_input)
 
         self.height_input = QLineEdit()
         self.height_input.setPlaceholderText("Height")
-        self.height_input.setMinimumHeight(45)
+        self.height_input.setMinimumHeight(42)
         resolution_layout.addWidget(self.height_input)
         res_layout.addLayout(resolution_layout)
 
@@ -221,8 +226,8 @@ class SettingsPage(QWidget):
         bg_card = QWidget()
         bg_card.setObjectName("card_container")
         bg_layout = QVBoxLayout(bg_card)
-        bg_layout.setContentsMargins(24, 24, 24, 24)
-        bg_layout.setSpacing(16)
+        bg_layout.setContentsMargins(15, 15, 15, 15)
+        bg_layout.setSpacing(10)
 
         video_settings_label = QLabel("BACKGROUND MEDIA")
         video_settings_label.setObjectName("section_label")
@@ -259,7 +264,7 @@ class SettingsPage(QWidget):
         # Save Button (Outside tabs)
         save_button = QPushButton("Save Settings")
         save_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        save_button.setMinimumHeight(55)
+        save_button.setMinimumHeight(42)
         save_button.clicked.connect(self.save_settings)
         main_layout.addWidget(save_button)
 

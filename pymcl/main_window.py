@@ -131,8 +131,8 @@ class MainWindow(QMainWindow):
         self.stack_layout.setCurrentWidget(central_widget)
 
         main_layout = QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(12)
 
         # Left navigation Scroll Area
         left_scroll = QScrollArea()
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         left_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         left_scroll.setFrameShape(QFrame.Shape.NoFrame)
         left_scroll.setStyleSheet("background: transparent;") # Transparent background
-        left_scroll.setMinimumWidth(220)
+        left_scroll.setMinimumWidth(200)
 
         # Left navigation container
         left_widget = QWidget()
@@ -150,14 +150,14 @@ class MainWindow(QMainWindow):
         left_widget.setAttribute(Qt.WidgetAttribute.WA_StyledBackground)
 
         left_layout = QVBoxLayout(left_widget)
-        left_layout.setSpacing(5)
-        left_layout.setContentsMargins(10, 10, 10, 10)
+        left_layout.setSpacing(4)
+        left_layout.setContentsMargins(8, 8, 8, 8)
 
         title_frame = QFrame()
         title_frame.setObjectName("title_frame")
         title_frame_layout = QVBoxLayout(title_frame)
         title_frame_layout.setSpacing(0)
-        title_frame_layout.setContentsMargins(15, 20, 15, 30)
+        title_frame_layout.setContentsMargins(10, 15, 10, 20)
 
         title_label = QLabel(APP_NAME)
         title_label.setObjectName("title_label")
