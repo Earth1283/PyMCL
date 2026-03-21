@@ -42,7 +42,9 @@ jobs:
         run: |
           python -m nuitka --onefile --standalone `
             --enable-plugin=pyqt6 `
+            --include-package=pymcl `
             --include-package-data=minecraft_launcher_lib `
+            --include-qt-plugins=multimedia `
             --windows-console-mode=disable `
             --assume-yes-for-downloads `
             --output-dir=dist `

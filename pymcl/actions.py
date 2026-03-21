@@ -85,8 +85,7 @@ class ActionHandler:
 
     def create_menu_bar(self):
         menu_bar = self.main_window.menuBar()
-        if sys.platform == "darwin":
-            menu_bar.setNativeMenuBar(False)
+        # Keep native menu bar on macOS (lives at top of screen, not in window)
 
         # File Menu
         file_menu = menu_bar.addMenu("&File")

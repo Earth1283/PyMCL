@@ -28,11 +28,13 @@ def main(splash_proc=None):
     check_dirs()
     app = QApplication(sys.argv)
 
-    font = QFont("Segoe UI")
-    if font.family() != "Segoe UI":
-        font = QFont("Inter") # try inter next
-    font.setStyleHint(QFont.StyleHint.SansSerif)
-    app.setFont(font)
+    from PyQt6.QtGui import QFontDatabase
+    available = set(QFontDatabase.families())
+    candidates = ["Inter", "Helvetica Neue", "Arial", "Liberation Sans"]
+    chosen = next((f for f in candidates if f in available), "")
+    if chosen:
+        font = QFont(chosen)
+        app.setFont(font)
 
     window = MainWindow()
     window.show()

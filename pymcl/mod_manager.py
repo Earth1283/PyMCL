@@ -244,6 +244,8 @@ class ModsPage(QWidget):
 
         try:
             mods_dir = self.get_mods_directory()
+            if not mods_dir:
+                return
             if not os.path.exists(mods_dir):
                  os.makedirs(mods_dir)
 

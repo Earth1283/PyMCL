@@ -10,7 +10,7 @@ import hashlib
 import minecraft_launcher_lib
 import minecraft_launcher_lib.fabric
 import requests
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QRunnable, QThreadPool
+from PyQt6.QtCore import QObject, QThread, pyqtSignal, pyqtSlot, QRunnable, QThreadPool
 
 from .config_manager import ConfigManager
 from .constants import (
@@ -31,10 +31,9 @@ class DateTimeEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-class VersionFetcher(QObject):
-    finished = pyqtSignal(list, bool, str)
+class VersionFetcher(QThread):
+    result = pyqtSignal(list, bool, str)
 
-    @pyqtSlot()
     def run(self):
         try:
             versions = minecraft_launcher_lib.utils.get_version_list()
@@ -47,17 +46,16 @@ class VersionFetcher(QObject):
                 print(f"Failed to save version cache: {e}")
 
             release_versions = [v["id"] for v in versions if v["type"] == "release"]
-            self.finished.emit(release_versions, True, "Versions loaded successfully.")
+            self.result.emit(release_versions, True, "Versions loaded successfully.")
         except Exception as e:
             error_msg = f"Error fetching versions: {str(e)}"
             print(error_msg)
-            self.finished.emit([], False, error_msg)
+            self.result.emit([], False, error_msg)
 
 
-class ImageDownloader(QObject):
-    finished = pyqtSignal(bool, str)
+class ImageDownloader(QThread):
+    result = pyqtSignal(bool, str)
 
-    @pyqtSlot()
     def run(self):
         try:
             print(f"Downloading default image from {DEFAULT_IMAGE_URL}...")
@@ -68,11 +66,11 @@ class ImageDownloader(QObject):
                 f.write(response.content)
 
             print(f"Image saved to {DEFAULT_IMAGE_PATH}")
-            self.finished.emit(True, DEFAULT_IMAGE_PATH)
+            self.result.emit(True, DEFAULT_IMAGE_PATH)
         except Exception as e:
             error_msg = f"Error downloading image: {str(e)}"
             print(error_msg)
-            self.finished.emit(False, error_msg)
+            self.result.emit(False, error_msg)
 
 
 class ModDownloader(QObject):
