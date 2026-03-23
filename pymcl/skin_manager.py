@@ -80,7 +80,7 @@ class SkinUploader(QThread):
             else:
                 try:
                     err = resp.json().get("errorMessage", resp.text)
-                except:
+                except (ValueError, KeyError):
                     err = resp.text
                 self.finished.emit(False, f"Upload failed: {err}")
 

@@ -32,7 +32,6 @@ class ImageCache(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.downloader_threads = []
 
     def get_image(self, url):
         filename = url.split("/")[-1]
@@ -45,7 +44,7 @@ class ImageCache(QObject):
             return None
 
     def download_image(self, url, cache_path):
-        thread = QThread()
+        thread = QThread(self)  # parent=self keeps it alive until finished
         downloader = ImageDownloader(url, cache_path)
         downloader.moveToThread(thread)
 
@@ -57,7 +56,6 @@ class ImageCache(QObject):
         thread.finished.connect(thread.deleteLater)
 
         thread.start()
-        self.downloader_threads.append(thread)
 
     @pyqtSlot(str, str)
     def on_image_downloaded(self, url, path):

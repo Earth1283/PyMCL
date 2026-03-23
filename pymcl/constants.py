@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import TypedDict
 from .config_manager import ConfigManager
 
@@ -23,11 +24,13 @@ MICROSOFT_INFO_PATH = os.path.join(MINECRAFT_DIR, "microsoft_info.json")
 
 def get_game_dir(version_id: str) -> str:
     """Returns the game directory for a specific version instance."""
-    # sanitize version_id to avoid path traversal or invalid characters if necessary
-    # For now, we assume version_id is safe as it comes from the launcher lib
     if not version_id or version_id == "Loading versions...":
-        return MINECRAFT_DIR # Fallback to default
-    return os.path.join(MINECRAFT_DIR, "instances", version_id)
+        return MINECRAFT_DIR
+    base = Path(MINECRAFT_DIR) / "instances"
+    result = (base / version_id).resolve()
+    if not str(result).startswith(str(base.resolve())):
+        raise ValueError(f"Invalid version_id: {version_id!r}")
+    return str(result)
 
 
 def get_mods_dir(version_id: str) -> str:

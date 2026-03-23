@@ -44,7 +44,17 @@ class MicrosoftAuth(QObject):
 
         self.server_thread = QThread()
         self.http_server = HTTPServer(("localhost", 8000), lambda *args, **kwargs: AuthHandler(self.finish_login, *args, **kwargs))
-        self.server_thread.run = self.http_server.handle_request
+        self.http_server.socket.settimeout(120)  # unblock after 2 minutes if auth never completes
+
+        def run_server():
+            try:
+                self.http_server.handle_request()
+            except OSError:
+                self.login_failed.emit("Login timed out or was cancelled.")
+                if self.http_server:
+                    self.http_server.server_close()
+
+        self.server_thread.run = run_server
         self.server_thread.start()
 
     def finish_login(self, auth_code):
