@@ -7,4 +7,11 @@ default_background.jpg
 .DS_Store
 /logs/
 /dist
-.dylib
+
+*.o
+*.obj
+*.lo
+
+*.dylib
+*.so
+*.dll
